@@ -4,7 +4,7 @@
   "private": true,
   "description": "Club Onyx — New Campton nightclub site",
   "scripts": {
-    "dev": "node server.mjs",
+    "dev": "node scripts/dev-server.mjs",
     "hash-password": "node scripts/hash-password.mjs"
   },
   "engines": {

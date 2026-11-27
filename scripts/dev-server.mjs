@@ -1,5 +1,8 @@
 // Local development server: static files + the /api routes, no dependencies.
-// Usage: npm run dev  (or: node server.mjs)
+// Usage: npm run dev  (or: node scripts/dev-server.mjs)
+// It lives in scripts/ on purpose: Vercel ignores that folder and must never
+// mistake this file for the app itself. On Vercel the site is static files plus
+// the /api functions, nothing else.
 
 import http from "node:http";
 import fs from "node:fs";
@@ -8,7 +11,8 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
-const root = path.dirname(fileURLToPath(import.meta.url));
+// Project root is one level up from scripts/.
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 function loadEnv(file) {
   if (!fs.existsSync(file)) return;

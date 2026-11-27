@@ -23,12 +23,12 @@ content; everything else is static.
 | `assets/style.css` | All styling |
 | `assets/fonts/` | Self-hosted Archivo and Inter (variable woff2, latin subset) |
 | `api/` | Serverless endpoints: login, logout, session, setup, content, orders, applications |
-| `server.mjs` | Local dev server (static + `/api`), no dependencies |
+| `scripts/dev-server.mjs` | Local dev server (static + `/api`), no dependencies |
 
 ## Run it locally
 
 ```bash
-npm run dev          # = node server.mjs, serves http://localhost:3000
+npm run dev          # = node scripts/dev-server.mjs, serves http://localhost:3000
 ```
 
 The local server also runs the `/api` routes, so the staff editor works offline. Use it
@@ -227,6 +227,14 @@ The Discord invite (`https://discord.gg/SFBC8bg79z`) is still there for question
 5. Rename the subdomain under **Settings → Domains** while it is free.
 
 The `/api` folder is detected automatically as Node functions — no `vercel.json` needed.
+
+**If the deployed site loads as plain unstyled text**, Vercel picked the dev server as the
+app: the project's **Framework Preset** was left on **Node.js/Express** instead of **Other**.
+Only `index.html` and `package.json` reach the function then, so every `/assets/...` file and
+every other page 404s. Fix it in **Settings → General → Framework Preset → Other** (also clear
+**Build Command**, **Output Directory** and **Install Command**), then **Deployments → ⋯ →
+Redeploy** without the build cache. The dev server now lives in `scripts/`, which
+`.vercelignore` hides, so there is nothing at the root for Vercel to mistake for a server.
 
 ## Images
 
