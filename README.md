@@ -214,6 +214,29 @@ and is never served as a static file.
 The Discord invite (`https://discord.gg/SFBC8bg79z`) is still there for questions; it is set in
 `assets/config.js` (`links.discord`) and in the header/footer markup.
 
+## Deploy on Freebuff Sites (the live link)
+
+The public site runs on Freebuff Sites: static files plus a Worker that runs the same `/api`
+handlers through a small Request/Response adapter (`worker/index.js`). Data still lives in the
+GitHub repo, so the admin, the phone, the backup button and the commit history all behave the
+same way they do locally.
+
+```bash
+npm run build:sites    # writes dist/site (public files) + dist/worker.js + dist/manifest.json
+npm run smoke:sites    # runs dist/worker.js locally: pages, private data, sessions, login
+```
+
+Environment on the Sites project (preview and production):
+
+| Variable | Value |
+| --- | --- |
+| `SESSION_SECRET` | 32+ random characters, signs the admin session cookie |
+| `GITHUB_REPO` | `unknownbigmanting/onyxsite` |
+| `GITHUB_TOKEN` | fine-grained token with **Contents: Read and write**; without it pages still load but nothing can be saved |
+
+`GITHUB_BRANCH` defaults to `main`. After changing any source file, rebuild and redeploy
+`dist/manifest.json`; secrets are attached on the deploy that follows them.
+
 ## Deploy to Vercel (free `.vercel.app` domain)
 
 1. Push the repository to GitHub (already done for `onyxsite`).

@@ -6,3 +6,5 @@ assets/data/admin.json
 .vercel/
 .DS_Store
 *.log
+.secrets/
+dist/
