@@ -44,6 +44,7 @@ function sanitize(input) {
   if (input.team.length > 100) throw new Error("Too many team members (max 100)");
 
   var usedEvents = new Set();
+  var seenFeatured = false;
   var events = input.events.map(function (raw) {
     if (!raw || typeof raw !== "object") throw new Error("Each event must be an object");
     var title = text(raw.title, 120);
@@ -54,7 +55,7 @@ function sanitize(input) {
       ? raw.tags.filter(function (t) { return TAGS.indexOf(t) !== -1; })
       : [];
     if (!tags.length) tags = ["club"];
-    return {
+    var event = {
       id: uniqueId(slug(raw.id || title + "-" + date.slice(0, 10), "event"), usedEvents),
       title: title,
       date: date,
@@ -67,8 +68,16 @@ function sanitize(input) {
       entry: text(raw.entry, 120),
       ticket: Math.min(Math.max(Math.round(Number(raw.ticket) || 0), 0), 100000),
       description: multiline(raw.description, 600),
-      featured: !!raw.featured
+      timezone: text(raw.timezone, 16) || "GMT",
+      featured: false
     };
+
+    // Only one night can be pinned to the home page; the first one wins.
+    if (raw.featured && !seenFeatured) {
+      event.featured = true;
+      seenFeatured = true;
+    }
+    return event;
   });
 
   var usedTeam = new Set();

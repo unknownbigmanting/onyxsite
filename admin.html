@@ -6,7 +6,7 @@
   <title>Staff access — Club Onyx</title>
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#04060b">
-  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/img/favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -122,8 +122,24 @@
                   <input id="e-title" name="title" type="text" required placeholder="New Year in Blue">
                 </div>
                 <div class="field">
-                  <label for="e-date">Date and start <span class="req">*</span></label>
-                  <input id="e-date" name="date" type="datetime-local" required>
+                  <label for="e-date">Date <span class="req">*</span></label>
+                  <input id="e-date" name="date" type="text" required inputmode="numeric" autocomplete="off" placeholder="31/12/26">
+                  <p class="field-hint">dd/mm/yy</p>
+                </div>
+                <div class="field">
+                  <label for="e-start">Start time <span class="req">*</span></label>
+                  <input id="e-start" name="start" type="text" required inputmode="numeric" autocomplete="off" placeholder="21:00">
+                  <p class="field-hint">24-hour, e.g. 21:00</p>
+                </div>
+                <div class="field">
+                  <label for="e-timezone">Timezone</label>
+                  <select id="e-timezone" name="timezone">
+                    <option value="GMT">GMT (UTC+0)</option>
+                    <option value="BST">BST (UTC+1)</option>
+                    <option value="CET">CET (UTC+1)</option>
+                    <option value="EST">EST (UTC-5)</option>
+                    <option value="PST">PST (UTC-8)</option>
+                  </select>
                 </div>
                 <div class="field">
                   <label for="e-time">Doors label</label>
@@ -169,7 +185,7 @@
                 </div>
                 <label class="check">
                   <input type="checkbox" name="featured">
-                  <span>Feature in the big next-night panel.</span>
+                  <span>Show this night in the big panel on the home page. Only one night can be pinned — ticking this unpins the others.</span>
                 </label>
               </div>
               <div class="form-foot">
@@ -209,7 +225,7 @@
                 </div>
                 <div class="field">
                   <label for="m-dept">Department</label>
-                  <input id="m-dept" name="dept" type="text" list="dept-options" placeholder="Leadership">
+                  <input id="m-dept" name="dept" type="text" list="dept-options" placeholder="Management">
                   <datalist id="dept-options"></datalist>
                 </div>
                 <div class="field">

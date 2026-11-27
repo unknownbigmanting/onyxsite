@@ -106,21 +106,28 @@ Vercel, never into a file in the repo.
   "date": "2026-12-31T21:00:00",
   "displayDate": "Thursday 31 December 2026",
   "time": "22:00 – 04:00",
+  "timezone": "GMT",
   "venue": "Main Floor + The Vault",
   "tags": ["club"],
   "status": "open",
   "statusLabel": "Guest list open",
   "entry": "Free before 23:00 · $10 after",
+  "ticket": 25,
   "description": "One or two lines for the card.",
   "featured": true
 }
 ```
 
-- `date` drives the countdown, date badge and next-night panel. Past events stay in the file
-  but stop being promoted.
+- In the editor the date is typed as **dd/mm/yy** with a 24-hour start time; `date` is stored
+  as ISO (`2026-12-31T21:00:00`) and drives the countdown, date badge and next-night panel.
+  Past events stay in the file but stop being promoted.
+- `timezone` (`GMT`, `BST`, `CET`, `EST`, `PST`) is the label shown next to the time.
+- `ticket` is the price of one ticket for that night, charged at the door. `0` means free.
 - `tags` are `club`, `community`, `special` — they match the filter buttons.
 - `status` is `open` (green), `limited` or `announced` (blue), `soldout` (grey).
-- The soonest future event is promoted automatically; `featured` pins a different one.
+- `featured` pins one night into the big panel on the home page. **Only one event can be
+  featured** — the editor unpins the others, and the server keeps just the first. With nothing
+  featured the home page panel is hidden; `events.html` still shows the soonest night.
 
 ### Team
 
@@ -186,7 +193,7 @@ The `/api` folder is detected automatically as Node functions — no `vercel.jso
 | `onyx-wordmark.jpg` | About panel + social preview |
 | `venue-angle.jpg` | Hero background |
 | `venue-sign.jpg`, `venue-bar.jpg` | "The room" gallery |
-| `favicon.svg` | Browser tab icon |
+| `favicon.png` | Browser tab icon — the ONYX wordmark cropped out of `onyx2.webp` |
 
 Replace any file keeping the name. Keep `venue-angle.jpg` wide and dark on the left so the
 hero copy stays readable.

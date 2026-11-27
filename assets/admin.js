@@ -263,8 +263,9 @@
         '<div class="admin-row">' +
           '<div><b>' + (valid ? pad(d.getDate()) : "--") + '</b><small>' + (valid ? MONTHS[d.getMonth()] : "—") + '</small></div>' +
           '<div>' +
-            '<div class="admin-row-title">' + esc(ev.title || "Untitled") + (ev.featured ? ' · featured' : '') + '</div>' +
-            '<div class="admin-row-meta">' + esc(ev.displayDate || ev.date || "") + ' · ' + esc(ev.venue || "—") + '</div>' +
+            '<div class="admin-row-title">' + esc(ev.title || "Untitled") + (ev.featured ? ' · on home page' : '') + '</div>' +
+            '<div class="admin-row-meta">' + esc(ev.displayDate || ev.date || "") +
+              (ev.timezone ? " · " + esc(ev.timezone) : "") + ' · ' + esc(ev.venue || "—") + '</div>' +
           '</div>' +
           '<div class="admin-row-actions">' +
             '<button class="btn btn--ghost btn--small" type="button" data-edit-event="' + esc(ev.id) + '">Edit</button>' +
@@ -286,8 +287,17 @@
   function fillEventForm(ev) {
     state.editingEvent = ev.id;
     eventForm.querySelector('[name="title"]').value = ev.title || "";
-    eventForm.querySelector('[name="date"]').value = String(ev.date || "").slice(0, 16);
+    var when = new Date(ev.date);
+    if (!isNaN(when.getTime())) {
+      eventForm.querySelector('[name="date"]').value =
+        pad(when.getDate()) + "/" + pad(when.getMonth() + 1) + "/" + String(when.getFullYear()).slice(-2);
+      eventForm.querySelector('[name="start"]').value = pad(when.getHours()) + ":" + pad(when.getMinutes());
+    } else {
+      eventForm.querySelector('[name="date"]').value = "";
+      eventForm.querySelector('[name="start"]').value = "";
+    }
     eventForm.querySelector('[name="time"]').value = ev.time || "";
+    eventForm.querySelector('[name="timezone"]').value = ev.timezone || "GMT";
     eventForm.querySelector('[name="venue"]').value = ev.venue || "";
     eventForm.querySelector('[name="entry"]').value = ev.entry || "";
     eventForm.querySelector('[name="ticket"]').value = Number(ev.ticket) || 0;
@@ -314,20 +324,47 @@
     return base || fallback;
   }
 
+  /* dd/mm/yy (or dd/mm/yyyy) → parts, or null when it is not a real date. */
+  function parseUkDate(value) {
+    var match = String(value || "").trim().match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2}|\d{4})$/);
+    if (!match) return null;
+    var day = parseInt(match[1], 10);
+    var month = parseInt(match[2], 10);
+    var year = parseInt(match[3], 10);
+    if (year < 100) year += 2000;
+    var probe = new Date(year, month - 1, day);
+    if (probe.getFullYear() !== year || probe.getMonth() !== month - 1 || probe.getDate() !== day) return null;
+    return { day: day, month: month, year: year };
+  }
+
+  function parseClock(value) {
+    var match = String(value || "").trim().match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return null;
+    var hours = parseInt(match[1], 10);
+    var minutes = parseInt(match[2], 10);
+    if (hours > 23 || minutes > 59) return null;
+    return { hours: hours, minutes: minutes };
+  }
+
   if (eventForm) {
     eventForm.addEventListener("submit", function (e) {
       e.preventDefault();
       var title = eventForm.querySelector('[name="title"]').value.trim();
-      var date = eventForm.querySelector('[name="date"]').value;
-      if (!title || !date) { log("A title and a date are required."); return; }
+      var day = parseUkDate(eventForm.querySelector('[name="date"]').value);
+      var clock = parseClock(eventForm.querySelector('[name="start"]').value);
+      if (!title) { log("A title is required."); return; }
+      if (!day) { log("Give the date as dd/mm/yy, for example 31/12/26."); return; }
+      if (!clock) { log("Give the start time as 24-hour, for example 21:00."); return; }
 
       var tags = [];
       eventForm.querySelectorAll('[name="tag"]:checked').forEach(function (box) { tags.push(box.value); });
       if (!tags.length) tags.push("club");
 
-      var normalized = date.length === 16 ? date + ":00" : date;
+      var normalized = day.year + "-" + pad(day.month) + "-" + pad(day.day) +
+        "T" + pad(clock.hours) + ":" + pad(clock.minutes) + ":00";
       var id = state.editingEvent || makeId(title + "-" + normalized.slice(0, 10), "event");
       var existing = state.events.find(function (ev) { return ev.id === id; });
+      var pinned = eventForm.querySelector('[name="featured"]').checked;
 
       var event = {
         id: id,
@@ -342,8 +379,15 @@
         entry: eventForm.querySelector('[name="entry"]').value.trim(),
         ticket: Math.max(parseInt(eventForm.querySelector('[name="ticket"]').value, 10) || 0, 0),
         description: eventForm.querySelector('[name="description"]').value.trim(),
-        featured: eventForm.querySelector('[name="featured"]').checked
+        timezone: eventForm.querySelector('[name="timezone"]').value,
+        featured: pinned
       };
+
+      if (pinned) {
+        state.events = state.events.map(function (ev) {
+          return ev.id === id ? ev : Object.assign({}, ev, { featured: false });
+        });
+      }
 
       if (existing) {
         state.events = state.events.map(function (ev) { return ev.id === id ? event : ev; });
@@ -356,6 +400,19 @@
       renderEvents();
       setDirty(true);
     });
+
+    var pinnedBox = eventForm.querySelector('[name="featured"]');
+    if (pinnedBox) {
+      pinnedBox.addEventListener("change", function () {
+        if (!pinnedBox.checked) return;
+        state.events.forEach(function (ev) {
+          if (ev.id !== state.editingEvent) ev.featured = false;
+        });
+        renderEvents();
+        setDirty(true);
+        log("Only one night can sit on the home page — saving unpins the others.");
+      });
+    }
   }
 
   if (eventList) {

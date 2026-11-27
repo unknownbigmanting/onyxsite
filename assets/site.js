@@ -172,7 +172,7 @@
           '<h2 style="margin-top:16px">' + esc(ev.title) + '</h2>' +
           '<div class="next-event-meta">' +
             '<span>' + esc(ev.displayDate) + '</span>' +
-            '<span>' + esc(ev.time) + '</span>' +
+            '<span>' + esc(ev.time) + (ev.timezone ? " " + esc(ev.timezone) : "") + '</span>' +
             '<span>' + esc(ev.venue) + '</span>' +
             '<span>' + esc(ev.entry) + '</span>' +
           '</div>' +
@@ -206,7 +206,7 @@
           '<h3>' + esc(ev.title) + '</h3>' +
           '<p>' + esc(ev.description) + '</p>' +
           '<div class="event-info">' +
-            '<span>' + esc(ev.time) + '</span>' +
+            '<span>' + esc(ev.time) + (ev.timezone ? " " + esc(ev.timezone) : "") + '</span>' +
             '<span>' + esc(ev.venue) + '</span>' +
             '<span>' + esc(ev.entry) + '</span>' +
           '</div>' +
@@ -220,12 +220,24 @@
 
   function renderCalendar(events) {
     var next = upcoming(events);
-    var featured = next.filter(function (e) { return e.featured; })[0] || next[0];
+    var pinned = next.filter(function (e) { return e.featured; })[0] || null;
 
     document.querySelectorAll("[data-next-event]").forEach(function (host) {
-      host.innerHTML = featured
-        ? nextEventHTML(featured, host.getAttribute("data-next-event") === "events")
-        : '<div class="next-event"><div class="empty-state">The next season is being locked in. Join the list and you will hear first.</div></div>';
+      var isEventsPage = host.getAttribute("data-next-event") === "events";
+      var pick = pinned || (isEventsPage ? next[0] : null);
+      var section = host.closest("section");
+
+      if (!pick) {
+        // The home page panel only appears when a night is pinned in the editor.
+        host.innerHTML = isEventsPage
+          ? '<div class="next-event"><div class="empty-state">The next season is being locked in. Join the list and you will hear first.</div></div>'
+          : "";
+        if (section && !isEventsPage) section.hidden = true;
+        return;
+      }
+
+      if (section && !isEventsPage) section.hidden = false;
+      host.innerHTML = nextEventHTML(pick, isEventsPage);
     });
 
     var list = document.querySelector("[data-events-list]");
@@ -503,7 +515,7 @@
               '<h3>' + esc(ev.title) + '</h3>' +
               '<p>' + esc(ev.description) + '</p>' +
               '<div class="event-info">' +
-                '<span>' + esc(ev.time) + '</span>' +
+                '<span>' + esc(ev.time) + (ev.timezone ? " " + esc(ev.timezone) : "") + '</span>' +
                 '<span>' + esc(ev.venue) + '</span>' +
               '</div>' +
             '</div>' +
