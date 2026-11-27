@@ -1,0 +1,220 @@
+{
+  "updated": "2026-11-27",
+  "note": "Maintained from /admin.html. Events drive the calendar; team drives the team page and the home preview.",
+  "events": [
+    {
+      "id": "after-hours-dec-12",
+      "title": "After Hours",
+      "date": "2026-12-12T22:00:00",
+      "displayDate": "Saturday 12 December 2026",
+      "time": "22:00 – 04:00",
+      "venue": "Main Floor + The Vault",
+      "tags": [
+        "club"
+      ],
+      "status": "open",
+      "statusLabel": "Guest list open",
+      "entry": "Free before 23:00 · $10 after",
+      "description": "The weekly one. Two rooms, guest set held back until the night, and the Vault bar open until close.",
+      "featured": true
+    },
+    {
+      "id": "new-year-blue-dec-31",
+      "title": "New Year in Blue",
+      "date": "2026-12-31T21:00:00",
+      "displayDate": "Thursday 31 December 2026",
+      "time": "21:00 – 05:00",
+      "venue": "Whole venue",
+      "tags": [
+        "club",
+        "special"
+      ],
+      "status": "limited",
+      "statusLabel": "Limited tickets",
+      "entry": "$25 · 21+",
+      "description": "Every room open, two guest sets, and the countdown on the Main Floor. The biggest night we run all year.",
+      "featured": false
+    },
+    {
+      "id": "deep-cuts-jan-16",
+      "title": "Deep Cuts — Halcyon All Night",
+      "date": "2027-01-16T22:00:00",
+      "displayDate": "Saturday 16 January 2027",
+      "time": "22:00 – 03:00",
+      "venue": "Neon Room",
+      "tags": [
+        "music"
+      ],
+      "status": "open",
+      "statusLabel": "Open",
+      "entry": "Free with guest list",
+      "description": "One DJ, one room, no requests. Halcyon plays the records that never make the Main Floor.",
+      "featured": false
+    },
+    {
+      "id": "community-mixer-jan-30",
+      "title": "New Campton Community Mixer",
+      "date": "2027-01-30T19:00:00",
+      "displayDate": "Saturday 30 January 2027",
+      "time": "19:00 – 23:00",
+      "venue": "The Vault",
+      "tags": [
+        "community"
+      ],
+      "status": "open",
+      "statusLabel": "Open to all",
+      "entry": "Free entry",
+      "description": "Early doors, no headliner, free entry for New Campton locals. Meet the team and the people behind the club.",
+      "featured": false
+    },
+    {
+      "id": "velvet-static-feb-13",
+      "title": "Velvet Static",
+      "date": "2027-02-13T22:00:00",
+      "displayDate": "Saturday 13 February 2027",
+      "time": "22:00 – 04:00",
+      "venue": "Main Floor",
+      "tags": [
+        "music",
+        "special"
+      ],
+      "status": "announced",
+      "statusLabel": "Announced",
+      "entry": "$15 · guest list priority",
+      "description": "Guest headline set plus a full lighting rebuild of the Main Floor. Announced early to the list only.",
+      "featured": false
+    }
+  ],
+  "team": [
+    {
+      "id": "christopher-reed",
+      "name": "Sir Christopher Reed",
+      "role": "Owner",
+      "dept": "Leadership",
+      "bio": "Acquired Club Onyx in 2026 and is behind the push to bring more live music and community nights to the venue.",
+      "tags": [
+        "Owner",
+        "Since 2026"
+      ],
+      "photo": "",
+      "featured": true
+    },
+    {
+      "id": "dana-reyes",
+      "name": "Dana Reyes",
+      "role": "General Manager",
+      "dept": "Leadership",
+      "bio": "Runs the building night to night: staffing, licensing, the calendar and every department under this roof.",
+      "tags": [
+        "Operations",
+        "Since 2019"
+      ],
+      "photo": "",
+      "featured": true
+    },
+    {
+      "id": "priya-nair",
+      "name": "Priya Nair",
+      "role": "Operations Manager",
+      "dept": "Leadership",
+      "bio": "Keeps the door, the bars and the cleaners in sync. If a night runs on time, this is why.",
+      "tags": [
+        "Logistics",
+        "Vendor"
+      ],
+      "photo": "",
+      "featured": false
+    },
+    {
+      "id": "halcyon",
+      "name": "DJ Halcyon",
+      "role": "Head of Music",
+      "dept": "Entertainment & Media",
+      "bio": "Resident since the first night in 2019. Books every guest set and builds the arc of the evening.",
+      "tags": [
+        "Resident",
+        "Booking"
+      ],
+      "photo": "",
+      "featured": true
+    },
+    {
+      "id": "nico-brand",
+      "name": "Nico Brand",
+      "role": "Events & Community",
+      "dept": "Entertainment & Media",
+      "bio": "Runs the community nights, the guest list inbox and the New Campton outreach programme.",
+      "tags": [
+        "Community",
+        "Events"
+      ],
+      "photo": "",
+      "featured": false
+    },
+    {
+      "id": "sable",
+      "name": "Sable",
+      "role": "Media & Design",
+      "dept": "Entertainment & Media",
+      "bio": "Every flyer, screen and sign in the building, plus the lighting design for the Main Floor.",
+      "tags": [
+        "Design",
+        "Lighting"
+      ],
+      "photo": "",
+      "featured": true
+    },
+    {
+      "id": "cole-vance",
+      "name": "Cole Vance",
+      "role": "Security Supervisor",
+      "dept": "Security",
+      "bio": "Twelve years on doors across New Campton. Runs the floor team and the camera room while the head of security role is filled.",
+      "tags": [
+        "Door",
+        "Floor"
+      ],
+      "photo": "",
+      "featured": false
+    },
+    {
+      "id": "rook",
+      "name": "Rook",
+      "role": "Door Lead",
+      "dept": "Security",
+      "bio": "The first person you meet and the last person who lets you in. Knows the regulars by name.",
+      "tags": [
+        "Front door",
+        "Guest list"
+      ],
+      "photo": "",
+      "featured": false
+    },
+    {
+      "id": "elena-marsh",
+      "name": "Elena Marsh",
+      "role": "Bar Manager",
+      "dept": "Hospitality",
+      "bio": "Runs all four bars, the stock and the cocktail list in the Vault. Trains every new server personally.",
+      "tags": [
+        "Bars",
+        "Stock"
+      ],
+      "photo": "",
+      "featured": false
+    },
+    {
+      "id": "theo-silva",
+      "name": "Theo Silva",
+      "role": "Floor Supervisor",
+      "dept": "Hospitality",
+      "bio": "Tables, service and the floor team. Always knows which booth is about to need a new round.",
+      "tags": [
+        "Floor",
+        "Tables"
+      ],
+      "photo": "",
+      "featured": false
+    }
+  ]
+}

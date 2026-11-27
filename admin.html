@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff access — Club Onyx</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#04060b">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site-header is-scrolled">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Club Onyx — home">
+        <span class="brand-stack"><small>Club</small><span class="brand-word">ONYX</span></span>
+        <span class="brand-tag">Staff access</span>
+      </a>
+      <div class="header-actions">
+        <a class="btn btn--ghost btn--small" href="events.html">View calendar</a>
+        <a class="btn btn--ghost btn--small" href="index.html">Back to site</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Sign in -->
+    <section class="container" id="login">
+      <form class="admin-gate" data-login>
+        <span class="eyebrow">Internal</span>
+        <h1>Staff sign in</h1>
+        <p>The calendar and team roster are edited here. Your session is signed and kept in a
+        secure cookie for eight hours.</p>
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" required placeholder="admin" value="admin">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••••">
+        </div>
+        <button class="btn btn--primary btn--block" type="submit">Sign in</button>
+        <p class="form-status" data-login-status role="status" aria-live="polite"></p>
+        <p class="admin-note" style="margin-top:22px">
+          Sign-in runs on the server. Set <code>ADMIN_PASSWORD_HASH</code> and
+          <code>SESSION_SECRET</code> in the deployment environment; the README explains both.
+        </p>
+      </form>
+    </section>
+
+    <!-- Editor -->
+    <section class="container admin-wrap" id="editor" hidden>
+      <div class="admin-bar">
+        <div>
+          <h1>Site editor</h1>
+          <p>Events and team. <span class="admin-save-state" data-save-state>Saved</span></p>
+        </div>
+        <div class="admin-bar-actions">
+          <button class="btn btn--primary btn--small" type="button" data-action="save">Save changes</button>
+          <button class="btn btn--ghost btn--small" type="button" data-action="reload">Reload</button>
+          <button class="btn btn--ghost btn--small" type="button" data-action="logout">Sign out</button>
+        </div>
+      </div>
+
+      <div class="admin-tabs" role="tablist" aria-label="Editor sections">
+        <button class="admin-tab" type="button" role="tab" data-tab="events" aria-selected="true">Events</button>
+        <button class="admin-tab" type="button" role="tab" data-tab="team" aria-selected="false">Team</button>
+      </div>
+
+      <!-- Events -->
+      <div data-tab-panel="events">
+        <div class="admin-grid">
+          <div class="admin-panel">
+            <h2>Calendar <span class="field-hint" data-count-label></span></h2>
+            <div class="admin-list" data-events-list></div>
+            <div class="admin-empty" data-events-empty hidden>No events yet. Add one on the right.</div>
+            <p class="admin-note">
+              The soonest event is promoted to the big panel automatically. Tick
+              <strong>Feature</strong> to pin a different one.
+            </p>
+          </div>
+
+          <div class="admin-panel">
+            <h2 data-event-form-title>New event</h2>
+            <form data-event-form novalidate>
+              <div class="form-grid">
+                <div class="field field--full">
+                  <label for="e-title">Title <span class="req">*</span></label>
+                  <input id="e-title" name="title" type="text" required placeholder="After Hours">
+                </div>
+                <div class="field">
+                  <label for="e-date">Date and start <span class="req">*</span></label>
+                  <input id="e-date" name="date" type="datetime-local" required>
+                </div>
+                <div class="field">
+                  <label for="e-time">Doors label</label>
+                  <input id="e-time" name="time" type="text" placeholder="22:00 – 04:00">
+                </div>
+                <div class="field">
+                  <label for="e-venue">Room / floor</label>
+                  <input id="e-venue" name="venue" type="text" placeholder="Main Floor + The Vault">
+                </div>
+                <div class="field">
+                  <label for="e-entry">Entry</label>
+                  <input id="e-entry" name="entry" type="text" placeholder="Free before 23:00 · $10 after">
+                </div>
+                <div class="field">
+                  <label for="e-status">Status</label>
+                  <select id="e-status" name="status">
+                    <option value="open">Open — green</option>
+                    <option value="limited">Limited — blue</option>
+                    <option value="announced">Announced — blue</option>
+                    <option value="soldout">Sold out — grey</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="e-statusLabel">Status label</label>
+                  <input id="e-statusLabel" name="statusLabel" type="text" placeholder="Guest list open">
+                </div>
+                <div class="field field--full">
+                  <label for="e-description">Short description</label>
+                  <textarea id="e-description" name="description" placeholder="One or two lines for the card." style="min-height:88px"></textarea>
+                </div>
+                <div class="field field--full">
+                  <label>Tags</label>
+                  <div class="admin-tags">
+                    <label><input type="checkbox" name="tag" value="club"> Club night</label>
+                    <label><input type="checkbox" name="tag" value="music"> Live set</label>
+                    <label><input type="checkbox" name="tag" value="community"> Community</label>
+                    <label><input type="checkbox" name="tag" value="special"> Special</label>
+                  </div>
+                </div>
+                <label class="check">
+                  <input type="checkbox" name="featured">
+                  <span>Feature in the big next-night panel.</span>
+                </label>
+              </div>
+              <div class="form-foot">
+                <button class="btn btn--ghost btn--small" type="button" data-action="clear-event">Clear</button>
+                <button class="btn btn--primary" type="submit" data-event-submit>Add event</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team -->
+      <div data-tab-panel="team" hidden>
+        <div class="admin-grid">
+          <div class="admin-panel">
+            <h2>Roster <span class="field-hint" data-team-count></span></h2>
+            <div class="admin-list" data-team-list></div>
+            <div class="admin-empty" data-team-empty hidden>No one on the roster yet. Add someone on the right.</div>
+            <p class="admin-note">
+              People appear on <a href="team.html">team.html</a> grouped by department, in this
+              order. Tags are free text — <strong>Booking</strong>, <strong>Brand</strong>,
+              <strong>Since 2021</strong>, anything.
+            </p>
+          </div>
+
+          <div class="admin-panel">
+            <h2 data-member-form-title>Add someone</h2>
+            <form data-member-form novalidate>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="m-name">Name <span class="req">*</span></label>
+                  <input id="m-name" name="name" type="text" required placeholder="Dana Reyes">
+                </div>
+                <div class="field">
+                  <label for="m-role">Role</label>
+                  <input id="m-role" name="role" type="text" placeholder="General Manager">
+                </div>
+                <div class="field">
+                  <label for="m-dept">Department</label>
+                  <input id="m-dept" name="dept" type="text" list="dept-options" placeholder="Leadership">
+                  <datalist id="dept-options"></datalist>
+                </div>
+                <div class="field">
+                  <label for="m-photo">Photo URL</label>
+                  <input id="m-photo" name="photo" type="url" placeholder="https://…">
+                </div>
+                <div class="field field--full">
+                  <label for="m-bio">One or two lines about them</label>
+                  <textarea id="m-bio" name="bio" placeholder="Runs the building night to night." style="min-height:88px"></textarea>
+                </div>
+                <div class="field field--full">
+                  <label for="m-tags">Tags</label>
+                  <input id="m-tags" name="tags" type="text" placeholder="Booking, Brand, Since 2021, Cool">
+                  <p class="field-hint">Comma separated, up to six. These become the small pills on the card.</p>
+                </div>
+                <label class="check">
+                  <input type="checkbox" name="featured">
+                  <span>Show on the home page preview.</span>
+                </label>
+              </div>
+              <div class="form-foot">
+                <button class="btn btn--ghost btn--small" type="button" data-action="clear-member">Clear</button>
+                <button class="btn btn--primary" type="submit" data-member-submit>Add person</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <p class="admin-log" data-admin-log role="status" aria-live="polite"></p>
+      <p class="admin-note">
+        <strong>Saving:</strong> changes are written to <code>assets/data/content.json</code> in
+        the repository as a commit, which redeploys the site. Nothing is saved until you press
+        <strong>Save changes</strong>.
+      </p>
+    </section>
+  </main>
+
+  <script src="assets/config.js"></script>
+  <script src="assets/admin.js"></script>
+</body>
+</html>
