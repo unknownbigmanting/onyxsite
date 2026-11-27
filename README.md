@@ -180,8 +180,10 @@ username they applied with and sees their status, the role, the dates, any note 
 and a four-step timeline (Submitted → In review → Interview → Decision).
 
 Statuses are `received`, `review`, `interview`, `accepted` and `declined`. The **Applications**
-tab in the admin panel lists every application with its full answers, sets the status, writes
-the note the applicant sees, and deletes entries — each change saves immediately.
+tab in the admin panel lists every application with its full answers, sets the status, and has
+a **decision box** (up to 800 characters, line breaks kept) where you write the answer the
+applicant reads with their status — accepted with a time and door, or a short no. Each change
+saves immediately.
 
 `/api/applications` takes a POST from anyone (rate-limited, one open application per username),
 answers `?username=` lookups with only that applicant's status and note, and keeps the full

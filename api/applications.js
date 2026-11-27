@@ -64,7 +64,7 @@ function cleanItem(raw) {
     why: multiline(raw.why, 1200),
     experience: multiline(raw.experience, 1200),
     extra: multiline(raw.extra, 600),
-    note: text(raw.note, 240),
+    note: multiline(raw.note, 800),
     status: STATUSES.indexOf(raw.status) !== -1 ? raw.status : "received",
     updated: text(raw.updated, 40)
   };

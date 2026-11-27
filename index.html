@@ -14,6 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="assets/img/venue-angle.jpg" fetchpriority="high">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -49,7 +50,7 @@
     <!-- Hero -->
     <section class="hero">
       <div class="hero-bg">
-        <img src="assets/img/venue-angle.jpg" alt="" aria-hidden="true">
+        <img src="assets/img/venue-angle.jpg" alt="" aria-hidden="true" decoding="async" fetchpriority="high">
       </div>
       <div class="container">
         <div class="hero-inner">
@@ -95,7 +96,7 @@
           </p>
         </div>
         <div class="split-media split-media--logo" data-reveal>
-          <img src="assets/img/onyx-wordmark.jpg" alt="The Club Onyx wordmark cut into banded black onyx stone and lit in blue">
+          <img src="assets/img/onyx-wordmark.jpg" alt="The Club Onyx wordmark cut into banded black onyx stone and lit in blue" loading="lazy" decoding="async" width="1024" height="1024">
         </div>
       </div>
     </section>

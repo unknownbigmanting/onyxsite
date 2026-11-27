@@ -632,7 +632,7 @@
       body: JSON.stringify({ items: orderState.items })
     })
       .then(function (data) {
-        log((message ? message + " " : "") + "Saved " + data.items + " orders.");
+        log((message ? message + " " : "") + "Saved " + data.items + (data.items === 1 ? " order." : " orders."));
       })
       .catch(function (err) {
         if (err.status === 401) showLogin("Session expired — sign in again.");
@@ -728,8 +728,8 @@
             '<div class="admin-row-title">' + esc(item.icName) + ' · ' + esc(item.roblox) + '</div>' +
             '<div class="admin-row-meta">' + meta + '</div>' +
             '<div class="admin-app-answers">' + answers + '</div>' +
-            '<label class="admin-app-note"><span class="field-hint">Note for the applicant (shown with their status)</span>' +
-              '<input type="text" maxlength="240" value="' + esc(item.note) + '" data-app-note="' + esc(item.id) + '" placeholder="Meet us at the door at 20:00.">' +
+            '<label class="admin-app-note"><span class="field-hint">Decision / note for the applicant — they see this when they check their status</span>' +
+              '<textarea rows="3" maxlength="800" data-app-note="' + esc(item.id) + '" placeholder="Accepted — meet us at the door on Saturday at 20:00 and ask for the duty manager.">' + esc(item.note) + '</textarea>' +
             '</label>' +
           '</div>' +
           '<div class="admin-row-actions">' +
@@ -755,7 +755,7 @@
       body: JSON.stringify({ items: appState.items })
     })
       .then(function (data) {
-        log((message ? message + " " : "") + "Saved " + data.items + " applications.");
+        log((message ? message + " " : "") + "Saved " + data.items + (data.items === 1 ? " application." : " applications."));
       })
       .catch(function (err) {
         if (err.status === 401) showLogin("Session expired — sign in again.");
@@ -795,7 +795,7 @@
       if (note) {
         var noteId = note.getAttribute("data-app-note");
         appState.items = appState.items.map(function (item) {
-          return item.id === noteId ? Object.assign({}, item, { note: note.value.trim(), updated: now }) : item;
+          return item.id === noteId ? Object.assign({}, item, { note: note.value.trim().slice(0, 800), updated: now }) : item;
         });
         saveApplications("Saved note.");
       }

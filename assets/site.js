@@ -84,6 +84,7 @@
   }
 
   /* ---------- Reveal on scroll ---------- */
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var io = null;
   if (!reduceMotion && "IntersectionObserver" in window) {
     io = new IntersectionObserver(function (entries) {
@@ -104,8 +105,6 @@
   reveal(document);
 
   /* ---------- Countdowns ---------- */
-  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
   function animateDigit(el) {
     if (reduceMotion || typeof el.animate !== "function") return;
     el.animate(
