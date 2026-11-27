@@ -1,6 +1,6 @@
 "use strict";
 
-var TAGS = ["club", "music", "community", "special"];
+var TAGS = ["club", "community", "special"];
 var STATUSES = ["open", "limited", "soldout", "announced"];
 
 function text(value, max) {

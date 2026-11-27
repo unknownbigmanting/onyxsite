@@ -7,7 +7,7 @@
 window.ONYX_CONFIG = {
   clubName: "Club Onyx",
 
-  // Where reservations, applications and messages go.
+  // Where contact messages go.
   // Leave empty to fall back to a pre-filled email; paste a form endpoint
   // (Formspree, Basin, Getform...) to collect submissions.
   formEndpoint: "",

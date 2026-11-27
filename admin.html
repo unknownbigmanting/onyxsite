@@ -32,8 +32,8 @@
       <form class="admin-gate" data-login>
         <span class="eyebrow">Internal</span>
         <h1>Staff sign in</h1>
-        <p>The calendar and team roster are edited here. Your session is signed and kept in a
-        secure cookie for eight hours.</p>
+        <p>Calendar, roster and reservations. Your session is a HS256-signed token in a secure
+        cookie, good for eight hours.</p>
         <div class="field">
           <label for="username">Username</label>
           <input id="username" name="username" type="text" autocomplete="username" required placeholder="admin" value="admin">
@@ -45,8 +45,37 @@
         <button class="btn btn--primary btn--block" type="submit">Sign in</button>
         <p class="form-status" data-login-status role="status" aria-live="polite"></p>
         <p class="admin-note" style="margin-top:22px">
-          Sign-in runs on the server. Set <code>ADMIN_PASSWORD_HASH</code> and
-          <code>SESSION_SECRET</code> in the deployment environment; the README explains both.
+          No account yet? Reload this page — the first visit offers to create the owner account.
+        </p>
+      </form>
+    </section>
+
+    <!-- First run: the single owner account -->
+    <section class="container" id="setup" hidden>
+      <form class="admin-gate" data-setup>
+        <span class="eyebrow">First run</span>
+        <h1>Create the owner account</h1>
+        <p>
+          One account for this site, created right here. Whoever finishes this form owns the
+          panel — after that it locks and only that username and password work.
+        </p>
+        <div class="field">
+          <label for="s-username">Username</label>
+          <input id="s-username" name="username" type="text" autocomplete="username" required minlength="3" maxlength="40" placeholder="admin">
+        </div>
+        <div class="field">
+          <label for="s-password">Password</label>
+          <input id="s-password" name="password" type="password" autocomplete="new-password" required minlength="12" placeholder="12 characters or more">
+        </div>
+        <div class="field">
+          <label for="s-password2">Repeat password</label>
+          <input id="s-password2" name="password2" type="password" autocomplete="new-password" required minlength="12">
+        </div>
+        <button class="btn btn--primary btn--block" type="submit">Create owner account</button>
+        <p class="form-status" data-setup-status role="status" aria-live="polite"></p>
+        <p class="admin-note" style="margin-top:22px">
+          Keep the password safe — it is stored only as a slow scrypt hash. To start over,
+          delete <code>assets/data/admin.json</code> from the repository.
         </p>
       </form>
     </section>
@@ -68,6 +97,7 @@
       <div class="admin-tabs" role="tablist" aria-label="Editor sections">
         <button class="admin-tab" type="button" role="tab" data-tab="events" aria-selected="true">Events</button>
         <button class="admin-tab" type="button" role="tab" data-tab="team" aria-selected="false">Team</button>
+        <button class="admin-tab" type="button" role="tab" data-tab="reservations" aria-selected="false">Reservations</button>
       </div>
 
       <!-- Events -->
@@ -89,7 +119,7 @@
               <div class="form-grid">
                 <div class="field field--full">
                   <label for="e-title">Title <span class="req">*</span></label>
-                  <input id="e-title" name="title" type="text" required placeholder="After Hours">
+                  <input id="e-title" name="title" type="text" required placeholder="New Year in Blue">
                 </div>
                 <div class="field">
                   <label for="e-date">Date and start <span class="req">*</span></label>
@@ -128,7 +158,6 @@
                   <label>Tags</label>
                   <div class="admin-tags">
                     <label><input type="checkbox" name="tag" value="club"> Club night</label>
-                    <label><input type="checkbox" name="tag" value="music"> Live set</label>
                     <label><input type="checkbox" name="tag" value="community"> Community</label>
                     <label><input type="checkbox" name="tag" value="special"> Special</label>
                   </div>
@@ -199,6 +228,45 @@
               <div class="form-foot">
                 <button class="btn btn--ghost btn--small" type="button" data-action="clear-member">Clear</button>
                 <button class="btn btn--primary" type="submit" data-member-submit>Add person</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reservations -->
+      <div data-tab-panel="reservations" hidden>
+        <div class="admin-grid">
+          <div class="admin-panel">
+            <h2>Reservations <span class="field-hint" data-res-count></span></h2>
+            <div class="admin-list" data-res-list></div>
+            <div class="admin-empty" data-res-empty hidden>No reservations yet.</div>
+            <p class="admin-note">
+              Guests confirm the price online and pay at the door. Mark a booking
+              <strong>paid</strong> once the money is in — that saves straight away.
+            </p>
+          </div>
+
+          <div class="admin-panel">
+            <h2>Prices</h2>
+            <form data-price-form novalidate>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="p-guest">Guest list <span class="field-hint" style="display:inline">(per person)</span></label>
+                  <input id="p-guest" name="guest" type="number" min="0" step="1" required>
+                </div>
+                <div class="field">
+                  <label for="p-table">Table</label>
+                  <input id="p-table" name="table" type="number" min="0" step="1" required>
+                </div>
+                <div class="field">
+                  <label for="p-booth">VIP booth</label>
+                  <input id="p-booth" name="booth" type="number" min="0" step="1" required>
+                </div>
+              </div>
+              <p class="field-hint">These are the prices shown on the reservations page and charged at the door.</p>
+              <div class="form-foot">
+                <button class="btn btn--primary" type="submit">Save prices</button>
               </div>
             </form>
           </div>

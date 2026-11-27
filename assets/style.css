@@ -616,24 +616,14 @@ main, .site-footer, .site-header { position: relative; z-index: 1; }
 
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 54px; }
 
-.hero-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px 34px;
-  padding-top: 26px;
+.hero-note {
+  max-width: 44ch;
+  padding-top: 24px;
   border-top: 1px solid var(--line);
-  font-size: 0.86rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
   color: var(--muted);
 }
-.hero-meta strong {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: #fff;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-.hero-meta span { display: block; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-dim); margin-top: 4px; }
 
 /* Page hero (inner pages) */
 .page-hero {
@@ -830,6 +820,41 @@ main, .site-footer, .site-header { position: relative; z-index: 1; }
   color: var(--muted-dim);
 }
 .countdown.is-live b { color: var(--ok); }
+
+/* Reservation price summary */
+.price-box {
+  margin: 6px 0 22px;
+  padding: 20px 22px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(4, 6, 11, 0.55);
+}
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.price-row b { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; }
+.price-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 0.95rem;
+  color: #dbe6f7;
+}
+.price-total b {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--cyan);
+  font-variant-numeric: tabular-nums;
+}
+.price-hint { margin: 10px 0 0; font-size: 0.78rem; color: var(--muted-dim); }
 
 /* Team */
 .team-grid {
@@ -1234,6 +1259,7 @@ main, .site-footer, .site-header { position: relative; z-index: 1; }
   color: #eaf1ff;
 }
 .quote blockquote::before { content: "“"; color: var(--blue-bright); font-size: 1.4em; line-height: 0; margin-right: 4px; }
+.quote blockquote::after { content: "”"; color: var(--blue-bright); font-size: 1.4em; line-height: 0; margin-left: 2px; }
 .quote figcaption { font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-dim); }
 .quote figcaption strong { color: var(--cyan); font-weight: 600; }
 
@@ -1265,9 +1291,9 @@ main, .site-footer, .site-header { position: relative; z-index: 1; }
   right: 0;
   bottom: 0;
   padding: 46px 20px 16px;
-  font-size: 0.74rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
   color: #cfe0f7;
   background: linear-gradient(transparent, rgba(4, 6, 11, 0.88));
 }

@@ -24,7 +24,7 @@ loadEnv(path.join(root, ".env"));
 process.env.ALLOW_LOCAL_STORE = process.env.ALLOW_LOCAL_STORE || "1";
 
 const PORT = Number(process.env.PORT || 3000);
-const API_ROUTES = new Set(["login", "logout", "session", "content"]);
+const API_ROUTES = new Set(["login", "logout", "session", "setup", "content", "reserve", "reservations"]);
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -76,6 +76,11 @@ const server = http.createServer(async (req, res) => {
     pathname = decodeURIComponent(url.pathname);
   } catch (err) {
     return json(res, 400, { error: "Bad path" });
+  }
+
+  // Private data files are reachable only through /api, never as static files.
+  if (pathname === "/assets/data/admin.json" || pathname === "/assets/data/reservations.json") {
+    return json(res, 404, { error: "Not found" });
   }
 
   if (pathname.endsWith("/")) pathname += "index.html";

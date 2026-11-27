@@ -1,7 +1,7 @@
 # Club Onyx — website
 
 Static site for **Club Onyx**, New Campton's largest nightlife venue — an underground club
-behind a plain garage door on Vane Street.
+behind a plain garage door on Broad St.
 
 Plain HTML, CSS and JavaScript. A few small serverless endpoints handle staff login and saving
 content; everything else is static.
@@ -10,15 +10,17 @@ content; everything else is static.
 | --- | --- |
 | `index.html` | Home: hero, rotating Cartier banner, about, next night, team preview, gallery, careers |
 | `team.html` | The roster, rendered from content and grouped by department |
-| `events.html` | Calendar, filters, reservations, past nights, house rules |
+| `events.html` | Calendar, filters and house rules |
+| `reserve.html` | Reservation form: night, party size, price, paid at the door |
 | `careers.html` | Open positions; applications go through Discord |
-| `contact.html` | Guest list, tables, private hire, contact form |
-| `admin.html` | Staff editor: events and team (sign-in required) |
+| `contact.html` | Contact form and address |
+| `admin.html` | Staff editor: events, team, reservations and prices |
 | `assets/data/content.json` | Events + team — the site's single source of truth |
+| `assets/data/reservations.json` | Reservations plus the prices set in the admin panel |
 | `assets/site.js` | Nav, countdowns, calendar, team, reservations, forms |
 | `assets/admin.js` | Staff editor (talks to `/api`) |
 | `assets/style.css` | All styling |
-| `api/` | Serverless endpoints: login, logout, session, content |
+| `api/` | Serverless endpoints: login, logout, session, content, reserve, reservations |
 | `server.mjs` | Local dev server (static + `/api`), no dependencies |
 
 ## Run it locally
@@ -30,31 +32,37 @@ npm run dev          # = node server.mjs, serves http://localhost:3000
 The local server also runs the `/api` routes, so the staff editor works offline. Use it
 rather than double-clicking files: the calendar and roster are loaded with `fetch()`.
 
-### One-time admin setup for local development
+### The owner account
 
-```bash
-cp .env.example .env
-node scripts/hash-password.mjs "a long admin password"   # prints ADMIN_PASSWORD_HASH=…
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"   # SESSION_SECRET
-# set ADMIN_USERNAME too if you do not want the default "admin"
-```
+There is **one** admin account, and it is created on the site rather than in a terminal:
 
-Paste both values into `.env`, then restart `npm run dev`. `.env` is gitignored — never
-commit it.
+1. Open `/admin.html` (or `http://localhost:3000/admin.html` locally).
+2. If no account exists yet, the page shows **Create the owner account**. The first person to
+   finish that form (username + a password of 12+ characters) owns the panel.
+3. It is stored as `assets/data/admin.json` — username plus a scrypt hash, never the password —
+   and the setup form then locks itself for good.
+
+The session cookie needs `SESSION_SECRET` (32+ random characters). Locally that means a `.env`
+file: `cp .env.example .env`, then start the dev server. On Vercel it is a single environment
+variable. On Vercel the account file is written to the repository through `GITHUB_TOKEN`, so
+that variable must be set or setup cannot be saved.
+
+To start over, delete `assets/data/admin.json` and redeploy. `ADMIN_USERNAME` and
+`ADMIN_PASSWORD_HASH` still work as an email-free fallback while no account file exists.
 
 ## Security model
 
 The admin panel is not a hidden page with a password in JavaScript any more. What happens now:
 
-- **Username and password are checked on the server.** Only `ADMIN_USERNAME` and
-  `ADMIN_PASSWORD_HASH` exist server-side; the password never reaches the browser. Hashing is
-  **scrypt** (N=65536, r=8, 64 MB per attempt, random salt) rather than a bare SHA-256 digest:
-  SHA-256 is deliberately fast, so leaked hashes can be brute-forced at billions of guesses a
-  second, while scrypt is slow and memory-hungry by design. Both comparisons are constant-time,
-  and the password is hashed even when the username is wrong so timing leaks nothing.
-- **Sessions are signed.** Login returns an `HttpOnly`, `SameSite=Strict` cookie containing an
-  HMAC-SHA256 signed token with an 8-hour expiry and a random ID. JavaScript cannot read it, so
-  XSS cannot steal it. `Secure` is added on HTTPS.
+- **One account, checked server-side.** The owner is created once at `/admin.html` and stored as
+  a **scrypt** hash (N=65536, r=8, 64 MB per attempt, random salt) — not a bare SHA-256 digest,
+  which is fast enough to grind through billions of guesses a second. The password never reaches
+  the browser, and the password is hashed even when the username is wrong so timing leaks
+  nothing.
+- **Sessions are HS256 JWTs.** Login returns an `HttpOnly`, `SameSite=Strict` cookie holding a
+  JWT with an `{"alg":"HS256","typ":"JWT"}` header, signed with `SESSION_SECRET` over
+  `header.payload`, compared in constant time, expiring after eight hours. JavaScript cannot read
+  the cookie, so XSS cannot lift it, and `Secure` is added on HTTPS.
 - **Cross-site requests are refused.** Every mutating request checks `Origin` against `Host`, so
   another site cannot post to the API with a borrowed cookie.
 - **Login is rate limited** (8 attempts per 15 minutes per IP; saves 30 per 5 minutes). The
@@ -72,9 +80,9 @@ Do not reuse a password you use anywhere else.
 
 | Name | Where | What it does |
 | --- | --- | --- |
-| `ADMIN_USERNAME` | local `.env` + Vercel | username for the admin panel (defaults to `admin`) |
-| `ADMIN_PASSWORD_HASH` | local `.env` + Vercel | scrypt hash from `scripts/hash-password.mjs` |
-| `SESSION_SECRET` | local `.env` + Vercel | 32+ random chars used to sign session cookies |
+| `SESSION_SECRET` | local `.env` + Vercel | 32+ random chars, the HS256 key for session cookies (required) |
+| `ADMIN_USERNAME` | optional | fallback login while no `admin.json` exists |
+| `ADMIN_PASSWORD_HASH` | optional | fallback scrypt hash from `scripts/hash-password.mjs` |
 | `GITHUB_TOKEN` | Vercel | fine-grained token with **Contents: Read and write** on this repo |
 | `GITHUB_REPO` | Vercel | `owner/repo`, e.g. `unknownbigmanting/onyxsite` |
 | `GITHUB_BRANCH` | Vercel (optional) | defaults to `main` |
@@ -93,10 +101,10 @@ Vercel, never into a file in the repo.
 
 ```json
 {
-  "id": "after-hours-dec-12",
-  "title": "After Hours",
-  "date": "2026-12-12T22:00:00",
-  "displayDate": "Saturday 12 December 2026",
+  "id": "new-year-blue-dec-31",
+  "title": "New Year in Blue",
+  "date": "2026-12-31T21:00:00",
+  "displayDate": "Thursday 31 December 2026",
   "time": "22:00 – 04:00",
   "venue": "Main Floor + The Vault",
   "tags": ["club"],
@@ -110,7 +118,7 @@ Vercel, never into a file in the repo.
 
 - `date` drives the countdown, date badge and next-night panel. Past events stay in the file
   but stop being promoted.
-- `tags` are `club`, `music`, `community`, `special` — they match the filter buttons.
+- `tags` are `club`, `community`, `special` — they match the filter buttons.
 - `status` is `open` (green), `limited` or `announced` (blue), `soldout` (grey).
 - The soonest future event is promoted automatically; `featured` pins a different one.
 
@@ -122,26 +130,31 @@ URL — leave it empty and the card shows initials. `featured` puts someone in t
 
 ### Editing in the browser
 
-Open `/admin.html`, sign in with the password you hashed, then use the **Events** and **Team**
-tabs. Nothing is written until you press **Save changes**; that commits `content.json` to the
-repository, Vercel redeploys, and the live site updates in under a minute.
+Open `/admin.html`, sign in with the password you hashed, then use the **Events**, **Team** and
+**Reservations** tabs. Events and team wait for **Save changes**; that commits `content.json`
+to the repository, Vercel redeploys, and the live site updates in under a minute. Reservation
+changes and prices save as you make them.
 
 If the API is unreachable (for example the site is served by a plain static server), the
 editor tells you — it will not pretend to save.
 
 ## Reservations
 
-Each event card has **Reserve**, which fills the reservation form on `events.html`
-(`#reserve`): night, name, Discord, party size, booking type (guest list / table / booth /
-private hire) and notes. That is the logistics sheet you need at the door.
+`reserve.html` is the only booking form. A visitor picks a night, gives a name and Discord,
+the party size and what they need (guest list, table or the VIP booth). The page shows the
+price live, they tick to confirm the amount, and nothing is charged online — they pay at the
+door.
 
-Delivery uses the same form pipeline as everything else: set `formEndpoint` in
-`assets/config.js` to a free [Formspree](https://formspree.io) / [Basin](https://usebasin.com) /
-[Getform](https://getform.io) endpoint and each reservation lands in your inbox with every
-field labelled. With `formEndpoint` empty, the form opens the visitor's mail app pre-filled.
+Prices live in the admin panel under **Reservations → Prices**: guest list is per person, table
+and VIP booth are one price for the group. Each booking is stored in
+`assets/data/reservations.json` with its night, party size, amount and an `ONX-…` reference,
+and the panel lists who is coming, what they owe and whether it has been paid.
 
-Reservations are **not** stored in the repository — only events and team are. Keep them in
-the inbox, a spreadsheet or your Discord.
+`/api/reserve` recomputes the price on the server (the browser cannot choose what it pays),
+rate-limits submissions and uses the same origin check as the rest of the API.
+`reservations.json` holds names and Discord handles — treat the repository as private data,
+keep it private on GitHub, or move that file somewhere only you can read before taking real
+bookings.
 
 ## Careers
 
@@ -154,11 +167,12 @@ invite powers the Discord icon in the header and the footer button; it is set in
 
 1. Push the repository to GitHub (already done for `onyxsite`).
 2. Vercel → **Add New → Project** → import the repo. Framework preset **Other**, no build
-   command, no output directory.
-3. Add the environment variables from the table above (at least `ADMIN_PASSWORD_HASH`,
-   `SESSION_SECRET`, `GITHUB_TOKEN`, `GITHUB_REPO`).
-4. Deploy, then test `/admin.html` on the live URL: sign in, change an event, save, confirm
-   the commit appears in GitHub and the site updates.
+   command, no output directory. `/api` becomes serverless functions automatically, and
+   `.vercelignore` keeps the private data files out of the public upload.
+3. Environment variables (Production and Preview): `SESSION_SECRET`, `GITHUB_TOKEN`,
+   `GITHUB_REPO`. No `ADMIN_*` values are needed any more.
+4. Deploy, open `https://your-site.vercel.app/admin.html` and create the owner account on that
+   first visit. Then change an event, save, and confirm the commit appears in GitHub.
 5. Rename the subdomain under **Settings → Domains** while it is free.
 
 The `/api` folder is detected automatically as Node functions — no `vercel.json` needed.
@@ -180,4 +194,7 @@ hero copy stays readable.
 - Fonts (Archivo for headings, Inter for body) load from Google Fonts; images are local.
 - The venue holds 85 people: one basement, opened 2019.
 - Motion respects `prefers-reduced-motion`.
+- `assets/data/admin.json` holds the owner username and scrypt hash, and
+  `assets/data/reservations.json` holds guest names and Discord handles. Both are committed to
+  the repository: keep the repo **private**, and never link those files directly.
 - All names, figures, prices and events are fictional, for the New Campton roleplay setting.

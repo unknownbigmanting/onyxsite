@@ -8,6 +8,9 @@
   var editor = document.getElementById("editor");
   var loginForm = document.querySelector("[data-login]");
   var loginStatus = document.querySelector("[data-login-status]");
+  var setup = document.getElementById("setup");
+  var setupForm = document.querySelector("[data-setup]");
+  var setupStatus = document.querySelector("[data-setup-status]");
   var saveState = document.querySelector("[data-save-state]");
   var logEl = document.querySelector("[data-admin-log]");
 
@@ -24,6 +27,12 @@
   var memberForm = document.querySelector("[data-member-form]");
   var memberFormTitle = document.querySelector("[data-member-form-title]");
   var memberSubmit = document.querySelector("[data-member-submit]");
+
+  var resList = document.querySelector("[data-res-list]");
+  var resEmpty = document.querySelector("[data-res-empty]");
+  var resCount = document.querySelector("[data-res-count]");
+  var priceForm = document.querySelector("[data-price-form]");
+  var resState = null;
 
   var state = {
     events: [],
@@ -86,6 +95,7 @@
 
   /* ---------- Session ---------- */
   function showLogin(message) {
+    if (setup) setup.hidden = true;
     if (login) login.hidden = false;
     if (editor) editor.hidden = true;
     if (message) {
@@ -98,14 +108,24 @@
 
   function showEditor() {
     if (login) login.hidden = true;
+    if (setup) setup.hidden = true;
     if (editor) editor.hidden = false;
+  }
+
+  function showSetup() {
+    if (login) login.hidden = true;
+    if (editor) editor.hidden = true;
+    if (setup) setup.hidden = false;
+    var field = document.getElementById("s-username");
+    if (field) field.focus();
   }
 
   function checkSession() {
     api("/api/session")
       .then(function (data) {
-        if (data.authenticated) { showEditor(); load(); }
-        else showLogin("");
+        if (data.authenticated) { showEditor(); load(); return; }
+        if (data.configured === false) { showSetup(); return; }
+        showLogin("");
       })
       .catch(function (err) {
         showLogin(err.status === 500
@@ -140,6 +160,45 @@
     });
   }
 
+  if (setupForm) {
+    setupForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var username = setupForm.querySelector("#s-username").value.trim();
+      var password = setupForm.querySelector("#s-password").value;
+      var repeat = setupForm.querySelector("#s-password2").value;
+      var button = setupForm.querySelector('[type="submit"]');
+
+      if (password !== repeat) {
+        setupStatus.textContent = "The two passwords do not match.";
+        setupStatus.dataset.state = "error";
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Creating…";
+      setupStatus.textContent = "";
+
+      api("/api/setup", { method: "POST", body: JSON.stringify({ username: username, password: password }) })
+        .then(function () {
+          setupForm.reset();
+          showEditor();
+          load();
+        })
+        .catch(function (err) {
+          if (err.status === 409) {
+            showLogin("An owner account already exists — sign in instead.");
+            return;
+          }
+          setupStatus.textContent = err.message || "That did not work.";
+          setupStatus.dataset.state = "error";
+        })
+        .finally(function () {
+          button.disabled = false;
+          button.textContent = "Create owner account";
+        });
+    });
+  }
+
   function logout() {
     api("/api/logout", { method: "POST" })
       .catch(function () {})
@@ -147,6 +206,9 @@
         setDirty(false);
         state.events = [];
         state.team = [];
+        resState = null;
+        if (resList) resList.innerHTML = "";
+        if (priceForm) priceForm.reset();
         showLogin("Signed out.");
       });
   }
@@ -160,6 +222,7 @@
         renderAll();
         setDirty(false);
         log("Loaded " + state.events.length + " events and " + state.team.length + " people.");
+        loadReservations();
       })
       .catch(function (err) {
         log(err.message);
@@ -444,6 +507,129 @@
         renderTeam();
         setDirty(true);
       }
+    });
+  }
+
+  /* ---------- Reservations ---------- */
+  function money(value) {
+    var sign = (resState && resState.prices && resState.prices.currency) || "$";
+    return sign + Number(value || 0).toLocaleString("en-GB");
+  }
+
+  function applyPrices() {
+    if (!priceForm || !resState) return;
+    ["guest", "table", "booth"].forEach(function (key) {
+      var field = priceForm.querySelector('[name="' + key + '"]');
+      if (field) field.value = resState.prices[key];
+    });
+  }
+
+  function renderReservations() {
+    if (!resList || !resState) return;
+    var items = resState.items || [];
+    resList.innerHTML = items.map(function (item) {
+      var created = item.created ? new Date(item.created) : null;
+      var when = created && !isNaN(created.getTime())
+        ? created.toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+        : "";
+      var meta = [item.night, item.contact, when, item.notes].filter(Boolean).map(esc).join(" · ");
+      return '' +
+        '<div class="admin-row">' +
+          '<div><b>' + esc(item.party) + '</b><small>pax</small></div>' +
+          '<div>' +
+            '<div class="admin-row-title">' + esc(item.name) + ' · ' + esc(item.type) + ' · ' + money(item.amount) +
+              (item.status === "paid" ? ' · paid' : '') + '</div>' +
+            '<div class="admin-row-meta">' + meta + '</div>' +
+          '</div>' +
+          '<div class="admin-row-actions">' +
+            '<button class="btn btn--ghost btn--small" type="button" data-res-paid="' + esc(item.id) + '">' +
+              (item.status === "paid" ? "Mark unpaid" : "Mark paid") + '</button>' +
+            '<button class="btn btn--ghost btn--small" type="button" data-res-delete="' + esc(item.id) + '">Delete</button>' +
+          '</div>' +
+        '</div>';
+    }).join("");
+    if (resEmpty) resEmpty.hidden = items.length !== 0;
+    if (resCount) {
+      var due = items.filter(function (i) { return i.status !== "paid"; })
+        .reduce(function (sum, i) { return sum + Number(i.amount || 0); }, 0);
+      resCount.textContent = items.length + " bookings · " + money(due) + " due at the door";
+    }
+  }
+
+  function saveReservations(message) {
+    if (!resState) return;
+    api("/api/reservations", {
+      method: "PUT",
+      body: JSON.stringify({ prices: resState.prices, items: resState.items })
+    })
+      .then(function (data) {
+        log((message ? message + " " : "") + "Saved " + data.items + " reservations.");
+      })
+      .catch(function (err) {
+        if (err.status === 401) showLogin("Session expired — sign in again.");
+        else log(err.message);
+      });
+  }
+
+  function loadReservations() {
+    if (!resList && !priceForm) return;
+    api("/api/reservations")
+      .then(function (data) {
+        resState = {
+          prices: data.prices || { currency: "$", guest: 10, table: 150, booth: 300 },
+          items: Array.isArray(data.items) ? data.items : []
+        };
+        applyPrices();
+        renderReservations();
+      })
+      .catch(function (err) {
+        if (err.status === 401) return;
+        log(err.message);
+      });
+  }
+
+  if (resList) {
+    resList.addEventListener("click", function (e) {
+      if (!resState) return;
+      var paid = e.target.closest("[data-res-paid]");
+      var del = e.target.closest("[data-res-delete]");
+      if (paid) {
+        var id = paid.getAttribute("data-res-paid");
+        resState.items = resState.items.map(function (item) {
+          return item.id === id ? Object.assign({}, item, { status: item.status === "paid" ? "reserved" : "paid" }) : item;
+        });
+        renderReservations();
+        saveReservations("Updated booking.");
+      }
+      if (del) {
+        var removeId = del.getAttribute("data-res-delete");
+        var item = resState.items.find(function (x) { return x.id === removeId; });
+        if (!item || !window.confirm("Delete the booking for " + item.name + "?")) return;
+        resState.items = resState.items.filter(function (x) { return x.id !== removeId; });
+        renderReservations();
+        saveReservations("Deleted booking.");
+      }
+    });
+  }
+
+  if (priceForm) {
+    priceForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!resState) return;
+      var read = function (name, fallback) {
+        var n = parseInt(priceForm.querySelector('[name="' + name + '"]').value, 10);
+        if (isNaN(n) || n < 0) return fallback;
+        return Math.min(n, 100000);
+      };
+      resState.prices = {
+        currency: (resState.prices && resState.prices.currency) || "$",
+        guest: read("guest", 10),
+        table: read("table", 150),
+        booth: read("booth", 300)
+      };
+      applyPrices();
+      renderReservations();
+      saveReservations("Prices updated.");
     });
   }
 

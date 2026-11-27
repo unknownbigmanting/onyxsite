@@ -3,22 +3,6 @@
   "note": "Maintained from /admin.html. Events drive the calendar; team drives the team page and the home preview.",
   "events": [
     {
-      "id": "after-hours-dec-12",
-      "title": "After Hours",
-      "date": "2026-12-12T22:00:00",
-      "displayDate": "Saturday 12 December 2026",
-      "time": "22:00 – 04:00",
-      "venue": "Main Floor + The Vault",
-      "tags": [
-        "club"
-      ],
-      "status": "open",
-      "statusLabel": "Guest list open",
-      "entry": "Free before 23:00 · $10 after",
-      "description": "The weekly one. Two rooms, guest set held back until the night, and the Vault bar open until close.",
-      "featured": true
-    },
-    {
       "id": "new-year-blue-dec-31",
       "title": "New Year in Blue",
       "date": "2026-12-31T21:00:00",
@@ -33,7 +17,7 @@
       "statusLabel": "Limited tickets",
       "entry": "$25 · 21+",
       "description": "Every room open, two guest sets, and the countdown on the Main Floor. The biggest night we run all year.",
-      "featured": false
+      "featured": true
     },
     {
       "id": "deep-cuts-jan-16",
@@ -43,7 +27,7 @@
       "time": "22:00 – 03:00",
       "venue": "Neon Room",
       "tags": [
-        "music"
+        "club"
       ],
       "status": "open",
       "statusLabel": "Open",
@@ -75,7 +59,6 @@
       "time": "22:00 – 04:00",
       "venue": "Main Floor",
       "tags": [
-        "music",
         "special"
       ],
       "status": "announced",

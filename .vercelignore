@@ -1,0 +1,8 @@
+# Private data, reachable only through the /api functions (they read GitHub).
+assets/data/admin.json
+assets/data/reservations.json
+
+# Local-only tooling and notes.
+scripts/
+README.md
+.env.example

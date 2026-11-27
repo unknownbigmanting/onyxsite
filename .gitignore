@@ -1,6 +1,8 @@
 .env
 .env.local
 node_modules/
+# Created by the first-run setup; on Vercel the API commits it to GitHub itself.
+assets/data/admin.json
 .vercel/
 .DS_Store
 *.log

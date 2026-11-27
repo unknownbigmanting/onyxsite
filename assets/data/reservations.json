@@ -1,0 +1,11 @@
+{
+  "updated": "2026-11-27",
+  "note": "Reservations made from /reserve.html. Guests pay at the door.",
+  "prices": {
+    "currency": "$",
+    "guest": 10,
+    "table": 150,
+    "booth": 300
+  },
+  "items": []
+}

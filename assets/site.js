@@ -104,6 +104,19 @@
   reveal(document);
 
   /* ---------- Countdowns ---------- */
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function animateDigit(el) {
+    if (reduceMotion || typeof el.animate !== "function") return;
+    el.animate(
+      [
+        { opacity: 0.3, transform: "translateY(-0.16em)" },
+        { opacity: 1, transform: "translateY(0)" }
+      ],
+      { duration: 440, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
+    );
+  }
+
   function tickCountdowns() {
     var now = Date.now();
     document.querySelectorAll("[data-countdown]").forEach(function (el) {
@@ -127,12 +140,20 @@
       fields.forEach(function (f) {
         var unit = f.getAttribute("data-unit");
         if (units[unit] === undefined) return;
-        f.textContent = unit === "days" ? String(units[unit]) : pad(units[unit]);
+        var next = unit === "days" ? String(units[unit]) : pad(units[unit]);
+        if (f.textContent === next) return;
+        f.textContent = next;
+        animateDigit(f);
       });
     });
   }
   tickCountdowns();
-  setInterval(tickCountdowns, 1000);
+  (function scheduleCountdowns() {
+    setTimeout(function () {
+      tickCountdowns();
+      scheduleCountdowns();
+    }, 1000 - (Date.now() % 1000) + 8);
+  })();
 
   /* ---------- Calendar ---------- */
   function byDate(a, b) { return Date.parse(a.date) - Date.parse(b.date); }
@@ -143,7 +164,6 @@
 
   function nextEventHTML(ev, isEventsPage) {
     var badge = BADGE[ev.status] || "badge";
-    var reserve = isEventsPage ? "#reserve" : "events.html#reserve";
     return '' +
       '<div class="next-event">' +
       '<div class="next-event-grid">' +
@@ -158,7 +178,7 @@
           '</div>' +
           '<p class="lead" style="max-width:50ch">' + esc(ev.description) + '</p>' +
           '<div class="hero-actions" style="margin:26px 0 0">' +
-            '<a class="btn btn--primary" href="' + reserve + '">Reserve now</a>' +
+            '<a class="btn btn--primary" href="reserve.html">Reserve a night</a>' +
             '<a class="btn btn--ghost" href="' + (isEventsPage ? "#calendar" : "events.html#calendar") + '">Full calendar</a>' +
           '</div>' +
         '</div>' +
@@ -192,7 +212,7 @@
           '</div>' +
         '</div>' +
         '<div class="event-cta">' +
-          '<button class="btn btn--primary btn--small" type="button" data-reserve="' + esc(ev.id) + '">Reserve</button>' +
+          '<a class="btn btn--primary btn--small" href="reserve.html?night=' + encodeURIComponent(ev.title) + '">Reserve</a>' +
           '<span class="' + badge + '">' + esc(ev.statusLabel || "Open") + '</span>' +
         '</div>' +
       '</article>';
@@ -218,13 +238,6 @@
       reveal(list);
     }
 
-    var select = document.querySelector('[data-reserve-form] select[name="event"]');
-    if (select) {
-      select.innerHTML = '<option value="">Pick a night</option>' + next.map(function (ev) {
-        return '<option value="' + esc(ev.title + " — " + ev.displayDate) + '">' +
-          esc(ev.title + " — " + ev.displayDate) + '</option>';
-      }).join("");
-    }
   }
 
   /* ---------- Team ---------- */
@@ -302,6 +315,7 @@
     .then(function (data) {
       renderCalendar((data && data.events) || []);
       renderTeam((data && data.team) || []);
+      fillReserveSelect((data && data.events) || []);
       tickCountdowns();
     })
     .catch(contentFailed);
@@ -332,25 +346,6 @@
       }
     });
   }
-
-  /* ---------- Reservation flow ---------- */
-  document.addEventListener("click", function (e) {
-    var btn = e.target.closest("[data-reserve]");
-    if (!btn) return;
-    var card = btn.closest(".event-card");
-    var title = card ? card.querySelector("h3").textContent : "";
-    var select = document.querySelector('[data-reserve-form] select[name="event"]');
-    if (select && title) {
-      var match = Array.prototype.find.call(select.options, function (o) {
-        return o.value.indexOf(title) === 0;
-      });
-      if (match) select.value = match.value;
-    }
-    var target = document.querySelector("#reserve");
-    if (target) target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
-    var first = document.querySelector("[data-reserve-form] input");
-    if (first) window.setTimeout(function () { first.focus({ preventScroll: true }); }, reduceMotion ? 0 : 480);
-  });
 
   /* ---------- Career role -> application form ---------- */
   document.querySelectorAll("[data-apply-role]").forEach(function (btn) {
@@ -445,4 +440,130 @@
       });
     });
   });
+
+  /* ---------- Reservations ---------- */
+  var reserveForm = document.querySelector("[data-reserve-form]");
+  var reservePrices = null;
+
+  function money(value) {
+    var sign = (reservePrices && reservePrices.currency) || "$";
+    return sign + Number(value || 0).toLocaleString("en-GB");
+  }
+
+  function reserveAmount() {
+    if (!reserveForm || !reservePrices) return 0;
+    var type = reserveForm.querySelector('[name="type"]').value;
+    var party = parseInt(reserveForm.querySelector('[name="party"]').value, 10) || 0;
+    if (type === "Table") return reservePrices.table;
+    if (type === "Booth") return reservePrices.booth;
+    return reservePrices.guest * Math.max(party, 0);
+  }
+
+  function updateReserveSummary() {
+    if (!reserveForm) return;
+    var total = reserveForm.querySelector("[data-price-total]");
+    var label = reserveForm.querySelector("[data-confirm-label]");
+    var amount = reserveAmount();
+    if (total) total.textContent = reservePrices ? money(amount) : "—";
+    if (label) {
+      label.textContent = reservePrices && amount > 0
+        ? "I understand " + money(amount) + " is paid at the door."
+        : "I understand the amount is paid at the door.";
+    }
+  }
+
+  function fillReserveSelect(events) {
+    var select = document.querySelector("[data-night-select]");
+    if (!select) return;
+    var list = upcoming(events);
+    if (!list.length) {
+      select.innerHTML = '<option value="">No nights on sale right now</option>';
+      return;
+    }
+    select.innerHTML = '<option value="">Pick a night</option>' + list.map(function (ev) {
+      var value = ev.title + " — " + ev.displayDate;
+      return '<option value="' + esc(value) + '">' + esc(value) + '</option>';
+    }).join("");
+
+    var wanted = new URLSearchParams(window.location.search).get("night");
+    if (!wanted) return;
+    var match = Array.prototype.find.call(select.options, function (o) {
+      return o.value.toLowerCase().indexOf(wanted.toLowerCase()) === 0;
+    });
+    if (match) select.value = match.value;
+  }
+
+  if (reserveForm) {
+    fetch("/api/reserve", { cache: "no-store" })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data || !data.prices) return;
+        reservePrices = data.prices;
+        var guest = reserveForm.querySelector("[data-price-guest]");
+        var table = reserveForm.querySelector("[data-price-table]");
+        var booth = reserveForm.querySelector("[data-price-booth]");
+        if (guest) guest.textContent = money(reservePrices.guest) + " per person";
+        if (table) table.textContent = money(reservePrices.table);
+        if (booth) booth.textContent = money(reservePrices.booth);
+        updateReserveSummary();
+      })
+      .catch(function () {
+        var hint = reserveForm.querySelector("[data-price-hint]");
+        if (hint) hint.textContent = "Prices could not load. The team will confirm the amount with you at the door.";
+      });
+
+    reserveForm.addEventListener("input", updateReserveSummary);
+    reserveForm.addEventListener("change", updateReserveSummary);
+    updateReserveSummary();
+
+    reserveForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var honeypot = reserveForm.querySelector('[name="company"]');
+      if (honeypot && honeypot.value) return;
+      if (!validate(reserveForm)) {
+        setStatus(reserveForm, "Almost — check the fields marked in red.", "error");
+        return;
+      }
+
+      var submit = reserveForm.querySelector('[type="submit"]');
+      var label = submit ? submit.textContent : "";
+      if (submit) { submit.disabled = true; submit.textContent = "Reserving…"; }
+      setStatus(reserveForm, "", "info");
+
+      var payload = {
+        night: reserveForm.querySelector('[name="night"]').value,
+        name: reserveForm.querySelector('[name="name"]').value.trim(),
+        contact: reserveForm.querySelector('[name="contact"]').value.trim(),
+        party: parseInt(reserveForm.querySelector('[name="party"]').value, 10) || 0,
+        type: reserveForm.querySelector('[name="type"]').value,
+        notes: reserveForm.querySelector('[name="notes"]').value.trim(),
+        confirm: true,
+        company: ""
+      };
+
+      fetch("/api/reserve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+        .then(function (res) {
+          return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+        })
+        .then(function (result) {
+          if (!result.ok) throw new Error((result.data && result.data.error) || "Reservation failed");
+          var amount = result.data && typeof result.data.amount === "number" ? result.data.amount : reserveAmount();
+          var id = (result.data && result.data.id) || "";
+          reserveForm.reset();
+          reserveForm.querySelectorAll(".is-invalid").forEach(function (f) { f.classList.remove("is-invalid"); });
+          updateReserveSummary();
+          setStatus(reserveForm, "Reserved" + (id ? " — reference " + id : "") + ". " + money(amount) + " is due at the door.", "success");
+        })
+        .catch(function (err) {
+          setStatus(reserveForm, err.message || "That did not send. Try again or message us on Discord.", "error");
+        })
+        .finally(function () {
+          if (submit) { submit.disabled = false; submit.textContent = label; }
+        });
+    });
+  }
 })();

@@ -1,5 +1,6 @@
 "use strict";
 
+var account = require("./_account");
 var auth = require("./_auth");
 var http = require("./_http");
 
@@ -16,9 +17,24 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  var storedHash = process.env.ADMIN_PASSWORD_HASH;
-  if (!storedHash) {
-    return http.send(res, 500, { error: "Admin login is not configured on this deployment." });
+  var stored = null;
+  try {
+    stored = await account.readAccount();
+  } catch (err) {
+    // Store unreachable: fall through to the environment credentials below.
+    stored = null;
+  }
+
+  var expectedUser = "";
+  var storedHash = "";
+  if (stored && stored.configured) {
+    expectedUser = stored.username;
+    storedHash = stored.hash;
+  } else if (process.env.ADMIN_PASSWORD_HASH) {
+    expectedUser = process.env.ADMIN_USERNAME || "admin";
+    storedHash = process.env.ADMIN_PASSWORD_HASH;
+  } else {
+    return http.send(res, 500, { error: "No owner account yet. Reload /admin.html to set one up." });
   }
 
   var body;
@@ -34,7 +50,6 @@ module.exports = async function handler(req, res) {
     return http.send(res, 401, { error: "That username or password is not right." });
   }
 
-  var expectedUser = process.env.ADMIN_USERNAME || "admin";
   var userOk = auth.verifyUsername(username, expectedUser);
   var passOk = false;
   try {

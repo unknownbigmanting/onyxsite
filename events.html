@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>What's on — Club Onyx</title>
-  <meta name="description" content="Every night at Club Onyx in New Campton: club nights, live sets, community events and specials. Guest list and table bookings open.">
+  <meta name="description" content="Every night at Club Onyx in New Campton: club nights, music, community events and specials. Guest list and table bookings open.">
   <meta name="theme-color" content="#04060b">
   <meta property="og:title" content="What's on — Club Onyx">
-  <meta property="og:description" content="Club nights, live sets and community events, one basement under New Campton.">
+  <meta property="og:description" content="Club nights, music and community events, one basement under New Campton.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/img/onyx-wordmark.jpg">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
@@ -29,6 +29,7 @@
         <a href="index.html">Home</a>
         <a href="team.html">Team</a>
         <a href="events.html" aria-current="page">Events</a>
+        <a href="reserve.html">Reserve</a>
         <a href="careers.html">Careers</a>
         <a href="contact.html">Contact</a>
       </nav>
@@ -78,7 +79,6 @@
         <div class="filters" data-filters role="group" aria-label="Filter events by type">
           <button type="button" data-filter="all" class="is-active" aria-pressed="true">All nights</button>
           <button type="button" data-filter="club" aria-pressed="false">Club nights</button>
-          <button type="button" data-filter="music" aria-pressed="false">Live sets</button>
           <button type="button" data-filter="community" aria-pressed="false">Community</button>
           <button type="button" data-filter="special" aria-pressed="false">Specials</button>
         </div>
@@ -88,104 +88,7 @@
       </div>
     </section>
 
-        <section class="section section--panel" id="reserve">
-      <div class="container">
-        <div class="split" style="align-items:start">
-          <div class="form-wrap" data-reveal>
-            <h2>Reserve now</h2>
-            <p>Guest list, a table or a booth. Tell us the night and the headcount — the floor
-            team confirms the same day and the door gets your name.</p>
-            <form data-form data-reserve-form data-mailto-subject="Reservation — Club Onyx" novalidate>
-              <div class="form-grid">
-                <div class="field field--full">
-                  <label for="reserve-event">Night <span class="req">*</span></label>
-                  <select id="reserve-event" name="event" required data-label="Event">
-                    <option value="">Pick a night</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="reserve-name">Name <span class="req">*</span></label>
-                  <input id="reserve-name" name="name" type="text" required autocomplete="name" placeholder="Name on the list" data-label="Name">
-                </div>
-                <div class="field">
-                  <label for="reserve-contact">Discord <span class="req">*</span></label>
-                  <input id="reserve-contact" name="contact" type="text" required placeholder="yourname" data-label="Contact">
-                </div>
-                <div class="field">
-                  <label for="reserve-party">How many? <span class="req">*</span></label>
-                  <select id="reserve-party" name="party" required data-label="Party size">
-                    <option value="">Pick a number</option>
-                    <option>1</option><option>2</option><option>3</option><option>4</option>
-                    <option>5</option><option>6</option><option>7</option><option>8</option>
-                    <option>9–12</option><option>13+ (booth)</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="reserve-type">What do you need?</label>
-                  <select id="reserve-type" name="type" data-label="Booking type">
-                    <option>Guest list</option>
-                    <option>Table</option>
-                    <option>Booth</option>
-                    <option>Private hire</option>
-                  </select>
-                </div>
-                <div class="field field--full">
-                  <label for="reserve-notes">Anything else? <span class="field-hint" style="display:inline">(optional)</span></label>
-                  <textarea id="reserve-notes" name="notes" placeholder="Birthday, arrival time, accessibility, drinks pre-order…" data-label="Notes"></textarea>
-                </div>
-              </div>
-              <label class="hp" aria-hidden="true">Company <input type="text" name="company" tabindex="-1" autocomplete="off"></label>
-              <div class="form-foot">
-                <p class="form-status" data-status role="status" aria-live="polite"></p>
-                <button class="btn btn--primary" type="submit">Request reservation</button>
-              </div>
-            </form>
-          </div>
-          <div data-reveal>
-            <span class="eyebrow">How it works</span>
-            <h2 style="font-size:1.8rem">Confirmed by the floor team</h2>
-            <ul class="checklist">
-              <li>Guest list closes at 23:00 — names only, no codes</li>
-              <li>Tables are held until 23:30, then released</li>
-              <li>Booths and private hire are confirmed by reply</li>
-            </ul>
-            <div class="card" style="margin-top:28px">
-              <h3>Group of 9+?</h3>
-              <p>Give us the headcount in the form and we will price a booth or the Neon Room for you.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-<section class="section section--panel">
-      <div class="container">
-        <div class="section-head" data-reveal>
-          <span class="eyebrow">Recently</span>
-          <h2>Last three nights</h2>
-          <p>What the room has already been through this season.</p>
-        </div>
-        <div class="past-grid">
-          <article class="past-card" data-reveal>
-            <span class="tag">31 Oct 2026</span>
-            <h3>Blackout Halloween</h3>
-            <p>A full room and the Vault bar running dry by 2am.</p>
-          </article>
-          <article class="past-card" data-reveal>
-            <span class="tag">19 Sep 2026</span>
-            <h3>Reopening Night</h3>
-            <p>The first night after the rebuild. New rig, new bars, same black door.</p>
-          </article>
-          <article class="past-card" data-reveal>
-            <span class="tag">22 Aug 2026</span>
-            <h3>Vault Sessions</h3>
-            <p>Six hours in the basement bar, no headliner, no lights above ten percent.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
+        <section class="section">
       <div class="container container--narrow">
         <div class="section-head section-head--center" data-reveal>
           <span class="eyebrow">Before you come</span>
@@ -194,32 +97,16 @@
         <div class="faq" data-reveal>
           <details open>
             <summary>Where is the entrance?</summary>
-            <p>Vane Street, under the Ninth Street overpass. Look for the plain black door with no sign. The door staff will find you before you find them.</p>
+            <p>Broad St, behind Hai Di Bao. Look for the plain black door with no sign. The door staff will find you before you find them.</p>
           </details>
           <details>
             <summary>Do I need to be on the guest list?</summary>
             <p>Not always, but it is faster and cheaper. Guest list closes at 23:00 on club nights, and we hold the queue for it.</p>
           </details>
           <details>
-            <summary>Is there a dress code?</summary>
-            <p>No trainers on the Main Floor, no sportswear anywhere. Everything else is fair game — it's dark down there.</p>
-          </details>
-          <details>
             <summary>Can I book a table?</summary>
-            <p>Yes. Tables in the Vault and the Neon Room can be reserved up to a week ahead through the contact page. Minimum spend applies on specials.</p>
+            <p>Yes, you can book the VIP booth upstairs by contacting one of our members of management.</p>
           </details>
-        </div>
-      </div>
-    </section>
-
-    <section class="cta-band">
-      <div class="container">
-        <span class="eyebrow" style="justify-content:center">Get on the list</span>
-        <h2>Guest list opens ten days out</h2>
-        <p>Ask for the list, a table, or the door code. New Campton's biggest room is downstairs.</p>
-        <div class="cta-actions">
-          <a class="btn btn--primary" href="#reserve">Reserve now</a>
-          <a class="btn btn--ghost" href="contact.html">Contact the club</a>
         </div>
       </div>
     </section>
@@ -231,7 +118,7 @@
         <a class="brand" href="index.html" aria-label="Club Onyx — home">
           <span class="brand-stack"><small>Club</small><span class="brand-word">ONYX</span></span>
         </a>
-        <p>New Campton's largest nightlife venue, providing entertainment to the community.</p>
+        <p>New Campton's largest nightlife venue, dedicated to creating the BEST possible experiences for you and the community</p>
       </div>
       <div class="footer-actions">
         <a class="btn btn--ghost btn--small" href="https://discord.gg/SFBC8bg79z" data-link="discord" target="_blank" rel="noopener noreferrer">Discord</a>
@@ -240,7 +127,7 @@
     </div>
     <div class="container footer-bottom">
       <p>© <span data-year>2026</span> Club Onyx</p>
-      <p>Vane Street, New Campton</p>
+      <p>Broad St, New Campton</p>
     </div>
   </footer>
 

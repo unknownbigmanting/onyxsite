@@ -27,7 +27,9 @@ function hmac(body) {
   return b64url(crypto.createHmac("sha256", sessionSecret()).update(body).digest());
 }
 
-/* ---------- sessions ---------- */
+/* ---------- sessions (JWT, HS256) ---------- */
+var JWT_HEADER = b64url(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+
 function createSession() {
   var now = Math.floor(Date.now() / 1000);
   var payload = {
@@ -36,20 +38,24 @@ function createSession() {
     exp: now + SESSION_TTL,
     jti: crypto.randomBytes(12).toString("hex")
   };
-  var body = b64url(JSON.stringify(payload));
+  var body = JWT_HEADER + "." + b64url(JSON.stringify(payload));
   return { token: body + "." + hmac(body), expires: payload.exp };
 }
 
 function verifySession(token) {
   if (!token || typeof token !== "string") return null;
   var parts = token.split(".");
-  if (parts.length !== 2) return null;
-  var expected = hmac(parts[0]);
-  var given = Buffer.from(parts[1]);
+  if (parts.length !== 3) return null;
+
+  var expected = hmac(parts[0] + "." + parts[1]);
+  var given = Buffer.from(parts[2]);
   var want = Buffer.from(expected);
   if (given.length !== want.length || !crypto.timingSafeEqual(given, want)) return null;
+
   try {
-    var payload = JSON.parse(fromB64url(parts[0]));
+    var header = JSON.parse(fromB64url(parts[0]));
+    if (!header || header.alg !== "HS256" || header.typ !== "JWT") return null;
+    var payload = JSON.parse(fromB64url(parts[1]));
     if (!payload || payload.sub !== "admin" || !payload.exp) return null;
     if (payload.exp < Math.floor(Date.now() / 1000)) return null;
     return payload;
