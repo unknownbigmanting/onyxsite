@@ -1,0 +1,6 @@
+{
+  "username": "admin",
+  "hash": "scrypt$65536$8$1$1098a775d5a9e080dd73654eb95fbcbb$997ce713e911f103f983b7586db98d84878017fd946f4d5a67f559b5b384caef5c221deb74c411cc131620060429441b2f9f097adcb41309d79f781e71139478",
+  "created": "2026-11-27T22:03:00.954Z",
+  "note": "Owner account for /admin.html. Delete this file to allow setup again."
+}
