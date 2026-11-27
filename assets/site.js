@@ -108,6 +108,18 @@
   }
   reveal(document);
 
+  /* ---------- Pause decorative loops off screen ---------- */
+  if (!reduceMotion && "IntersectionObserver" in window) {
+    var idle = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        entry.target.classList.toggle("is-paused", !entry.isIntersecting);
+      });
+    }, { rootMargin: "140px" });
+    document.querySelectorAll(".hero-bg img, .marquee-track").forEach(function (el) {
+      idle.observe(el);
+    });
+  }
+
   /* ---------- Countdowns ---------- */
   function animateDigit(el) {
     if (reduceMotion || typeof el.animate !== "function") return;

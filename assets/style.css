@@ -317,9 +317,9 @@ main, .site-footer, .site-header { position: relative; z-index: 1; }
   transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
 }
 .site-header.is-scrolled {
-  background: rgba(4, 6, 11, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  /* Deliberately no backdrop-filter: blurring the page behind a sticky header
+     re-composites on every scroll frame and is the main source of scroll jank. */
+  background: #04060b;
   border-bottom-color: var(--line);
 }
 
@@ -554,6 +554,7 @@ main, .site-footer, .site-header { position: relative; z-index: 1; }
   filter: saturate(1.15) contrast(1.05);
   transform: scale(1.06);
   animation: heroDrift 26s ease-in-out infinite alternate;
+  will-change: transform;
 }
 .hero-bg::after {
   content: "";
@@ -691,7 +692,11 @@ main, .site-footer, .site-header { position: relative; z-index: 1; }
   gap: 44px;
   width: max-content;
   animation: marquee 34s linear infinite;
+  will-change: transform;
 }
+
+/* Decorative loops are paused while off screen (site.js). */
+.is-paused { animation-play-state: paused !important; }
 .marquee span {
   display: inline-flex;
   align-items: center;
