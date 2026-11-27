@@ -120,7 +120,7 @@ Vercel, never into a file in the repo.
 
 - In the editor the date is typed as **dd/mm/yy** with a 24-hour start time; `date` is stored
   as ISO (`2026-12-31T21:00:00`) and drives the countdown, date badge and next-night panel.
-  Past events stay in the file but stop being promoted.
+  Past events stay in the file and on the events page but drop out of the countdown.
 - `timezone` (`GMT`, `BST`, `CET`, `EST`, `PST`) is the label shown next to the time.
 - `ticket` is the price of one ticket for that night, charged at the door. `0` means free.
 - `tags` are `club`, `community`, `special` — they match the filter buttons.

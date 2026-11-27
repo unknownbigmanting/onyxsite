@@ -1520,8 +1520,20 @@ main, .site-footer, .site-header { position: relative; z-index: 1; }
 
 @media (max-width: 640px) {
   .admin-split { grid-template-columns: 1fr; }
-  .admin-row { grid-template-columns: 52px 1fr; }
-  .admin-row-actions { grid-column: 1 / -1; }
+  .admin-bar { padding: 16px 18px; }
+  .admin-bar-actions { width: 100%; }
+  .admin-bar-actions .btn { flex: 1 1 auto; }
+  .admin-panel { padding: 18px; }
+  .admin-gate { margin: 34px auto; padding: 26px 22px; }
+  .admin-row { grid-template-columns: 52px minmax(0, 1fr); gap: 10px 12px; padding: 12px; }
+  .admin-row-actions { grid-column: 1 / -1; gap: 8px; }
+  .admin-row-actions .btn { flex: 1 1 auto; padding: 9px 12px; }
+  .admin-row--team { grid-template-columns: 42px minmax(0, 1fr); }
+  .admin-row-tools { grid-column: 1 / -1; gap: 8px; }
+  .admin-row-tools .admin-icon { width: 32px; height: 32px; }
+  .admin-row .admin-row-title,
+  .admin-row .admin-row-meta { overflow-wrap: anywhere; }
+  .admin-note code { overflow-wrap: anywhere; }
 }
 
 /* Page entrance + scrollbar polish */

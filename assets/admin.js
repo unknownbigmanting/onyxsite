@@ -583,14 +583,14 @@
       var when = created && !isNaN(created.getTime())
         ? created.toLocaleDateString("en-GB", { day: "numeric", month: "short" })
         : "";
-      var meta = [item.night, "ref " + item.id, when, item.notes].filter(Boolean).map(esc).join(" · ");
+      var meta = [cash(item.total), item.status === "paid" ? "paid" : "", item.night, "ref " + item.id, when, item.notes]
+        .filter(Boolean).map(esc).join(" · ");
 
       return '' +
         '<div class="admin-row">' +
           '<div><b>' + esc(item.qty) + '</b><small>tix</small></div>' +
           '<div>' +
-            '<div class="admin-row-title">' + esc(item.icName) + ' · ' + esc(item.roblox) + ' · ' + cash(item.total) +
-              (item.status === "paid" ? ' · paid' : '') + '</div>' +
+            '<div class="admin-row-title">' + esc(item.icName) + ' · ' + esc(item.roblox) + '</div>' +
             '<div class="admin-row-meta">' + meta + '</div>' +
           '</div>' +
           '<div class="admin-row-actions">' +
@@ -607,7 +607,10 @@
     var due = items.filter(function (i) { return i.status !== "paid"; })
       .reduce(function (sum, i) { return sum + Number(i.total || 0); }, 0);
 
-    if (orderCount) orderCount.textContent = items.length + " orders · " + tickets + " tickets";
+    if (orderCount) {
+      orderCount.textContent = items.length + (items.length === 1 ? " order · " : " orders · ") +
+        tickets + (tickets === 1 ? " ticket" : " tickets");
+    }
     if (orderTickets) orderTickets.textContent = String(tickets);
     if (orderDue) orderDue.textContent = cash(due);
   }
