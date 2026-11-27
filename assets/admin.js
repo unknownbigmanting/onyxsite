@@ -35,6 +35,13 @@
   var orderDue = document.querySelector("[data-order-due]");
   var orderState = null;
 
+  var appList = document.querySelector("[data-app-list]");
+  var appEmpty = document.querySelector("[data-app-empty]");
+  var appCount = document.querySelector("[data-app-count]");
+  var appOpen = document.querySelector("[data-app-open]");
+  var appAccepted = document.querySelector("[data-app-accepted]");
+  var appState = null;
+
   var state = {
     events: [],
     team: [],
@@ -209,6 +216,8 @@
         state.team = [];
         orderState = null;
         if (orderList) orderList.innerHTML = "";
+        appState = null;
+        if (appList) appList.innerHTML = "";
         showLogin("Signed out.");
       });
   }
@@ -223,6 +232,7 @@
         setDirty(false);
         log("Loaded " + state.events.length + " events and " + state.team.length + " people.");
         loadOrders();
+        loadApplications();
       })
       .catch(function (err) {
         log(err.message);
@@ -668,6 +678,139 @@
         renderOrders();
         saveOrders("Deleted order.");
       }
+    });
+  }
+
+  /* ---------- Applications ---------- */
+  var APP_STATUS = {
+    received: "Received",
+    review: "In review",
+    interview: "Interview",
+    accepted: "Accepted",
+    declined: "Not this time"
+  };
+
+  function shortDate(value) {
+    var d = new Date(value);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  function renderApplications() {
+    if (!appList || !appState) return;
+    var items = appState.items || [];
+
+    appList.innerHTML = items.map(function (item) {
+      var d = new Date(item.created);
+      var valid = !isNaN(d.getTime());
+      var answers = [
+        item.why ? "<p><strong>Why them</strong>" + esc(item.why) + "</p>" : "",
+        item.experience ? "<p><strong>Experience</strong>" + esc(item.experience) + "</p>" : "",
+        item.extra ? "<p><strong>Extra</strong>" + esc(item.extra) + "</p>" : ""
+      ].join("");
+      var options = Object.keys(APP_STATUS).map(function (key) {
+        return '<option value="' + key + '"' + (item.status === key ? " selected" : "") + ">" + APP_STATUS[key] + "</option>";
+      }).join("");
+      var meta = [
+        item.role,
+        item.discord ? "Discord " + item.discord : "",
+        item.timezone,
+        "gun licence: " + (item.gunLicense || "—"),
+        "melee pass: " + (item.meleePass || "—"),
+        shortDate(item.created) ? "applied " + shortDate(item.created) : "",
+        "ref " + item.id
+      ].filter(Boolean).map(esc).join(" · ");
+
+      return '' +
+        '<div class="admin-row admin-row--app">' +
+          '<div><b>' + (valid ? pad(d.getDate()) : "--") + '</b><small>' + (valid ? MONTHS[d.getMonth()] : "—") + '</small></div>' +
+          '<div>' +
+            '<div class="admin-row-title">' + esc(item.icName) + ' · ' + esc(item.roblox) + '</div>' +
+            '<div class="admin-row-meta">' + meta + '</div>' +
+            '<div class="admin-app-answers">' + answers + '</div>' +
+            '<label class="admin-app-note"><span class="field-hint">Note for the applicant (shown with their status)</span>' +
+              '<input type="text" maxlength="240" value="' + esc(item.note) + '" data-app-note="' + esc(item.id) + '" placeholder="Meet us at the door at 20:00.">' +
+            '</label>' +
+          '</div>' +
+          '<div class="admin-row-actions">' +
+            '<select class="admin-select" data-app-status="' + esc(item.id) + '" aria-label="Application status">' + options + '</select>' +
+            '<button class="btn btn--ghost btn--small" type="button" data-app-delete="' + esc(item.id) + '">Delete</button>' +
+          '</div>' +
+        '</div>';
+    }).join("");
+
+    if (appEmpty) appEmpty.hidden = items.length !== 0;
+
+    var open = items.filter(function (i) { return i.status !== "accepted" && i.status !== "declined"; }).length;
+    var accepted = items.filter(function (i) { return i.status === "accepted"; }).length;
+    if (appCount) appCount.textContent = items.length + (items.length === 1 ? " application" : " applications");
+    if (appOpen) appOpen.textContent = String(open);
+    if (appAccepted) appAccepted.textContent = String(accepted);
+  }
+
+  function saveApplications(message) {
+    if (!appState) return;
+    api("/api/applications", {
+      method: "PUT",
+      body: JSON.stringify({ items: appState.items })
+    })
+      .then(function (data) {
+        log((message ? message + " " : "") + "Saved " + data.items + " applications.");
+      })
+      .catch(function (err) {
+        if (err.status === 401) showLogin("Session expired — sign in again.");
+        else log(err.message);
+      });
+  }
+
+  function loadApplications() {
+    if (!appList) return;
+    api("/api/applications")
+      .then(function (data) {
+        appState = { items: Array.isArray(data.items) ? data.items : [] };
+        renderApplications();
+      })
+      .catch(function (err) {
+        if (err.status === 401) return;
+        log(err.message);
+      });
+  }
+
+  if (appList) {
+    appList.addEventListener("change", function (e) {
+      if (!appState) return;
+      var status = e.target.closest("[data-app-status]");
+      var note = e.target.closest("[data-app-note]");
+      var now = new Date().toISOString();
+
+      if (status) {
+        var statusId = status.getAttribute("data-app-status");
+        appState.items = appState.items.map(function (item) {
+          return item.id === statusId ? Object.assign({}, item, { status: status.value, updated: now }) : item;
+        });
+        renderApplications();
+        saveApplications("Updated application.");
+      }
+
+      if (note) {
+        var noteId = note.getAttribute("data-app-note");
+        appState.items = appState.items.map(function (item) {
+          return item.id === noteId ? Object.assign({}, item, { note: note.value.trim(), updated: now }) : item;
+        });
+        saveApplications("Saved note.");
+      }
+    });
+
+    appList.addEventListener("click", function (e) {
+      if (!appState) return;
+      var del = e.target.closest("[data-app-delete]");
+      if (!del) return;
+      var removeId = del.getAttribute("data-app-delete");
+      var item = appState.items.filter(function (x) { return x.id === removeId; })[0];
+      if (!item || !window.confirm("Delete the application from " + item.icName + "?")) return;
+      appState.items = appState.items.filter(function (x) { return x.id !== removeId; });
+      renderApplications();
+      saveApplications("Deleted application.");
     });
   }
 

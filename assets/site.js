@@ -453,6 +453,158 @@
     });
   });
 
+  /* ---------- Applications ---------- */
+  var applicationForm = document.querySelector("[data-application-form]");
+  var statusForm = document.querySelector("[data-status-form]");
+  var statusResult = document.querySelector("[data-status-result]");
+
+  var APP_STATUS = {
+    received: ["Received", "It is in the queue. We read every one, in the order they arrive."],
+    review: ["In review", "The team is reading your application now."],
+    interview: ["Interview", "You are through to the interview stage — keep an eye on your Discord DMs."],
+    accepted: ["Accepted", "Welcome to the crew. We will message you on Discord with your first shift."],
+    declined: ["Not this time", "We are not taking this one further. You are welcome to apply again next intake."]
+  };
+  var APP_STEPS = ["Submitted", "In review", "Interview", "Decision"];
+  var APP_STEP_INDEX = { received: 0, review: 1, interview: 2, accepted: 3, declined: 3 };
+
+  function dayLabel(value) {
+    var d = new Date(value);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  function renderStatus(data) {
+    if (!statusResult) return;
+    if (!data || !data.found) {
+      statusResult.hidden = true;
+      statusResult.innerHTML = "";
+      return;
+    }
+
+    var app = data.application;
+    var copy = APP_STATUS[app.status] || APP_STATUS.received;
+    var reached = APP_STEP_INDEX[app.status] == null ? 0 : APP_STEP_INDEX[app.status];
+    var steps = APP_STEPS.map(function (label, index) {
+      return '<li class="' + (index <= reached ? "is-done" : "") + '">' + label + "</li>";
+    }).join("");
+
+    statusResult.innerHTML = '' +
+      '<div class="status-head">' +
+        '<span class="status-pill status-pill--' + esc(app.status) + '">' + esc(copy[0]) + '</span>' +
+        '<span class="status-ref">' + esc(app.id) + '</span>' +
+      '</div>' +
+      '<h4>' + esc(app.role || "Crew") + '</h4>' +
+      '<p class="status-copy">' + esc(copy[1]) + '</p>' +
+      '<p class="status-meta">Applied ' + esc(dayLabel(app.created)) +
+        (app.updated && app.updated !== app.created ? " · updated " + esc(dayLabel(app.updated)) : "") + '</p>' +
+      (app.note ? '<p class="status-note">' + esc(app.note) + '</p>' : "") +
+      '<ol class="status-steps">' + steps + '</ol>';
+    statusResult.hidden = false;
+  }
+
+  function lookupApplication(username, form) {
+    if (!form) return;
+    var submit = form.querySelector('[type="submit"]');
+    var label = submit ? submit.textContent : "";
+    if (submit) { submit.disabled = true; submit.textContent = "Checking…"; }
+    setStatus(form, "", "info");
+
+    fetch("/api/applications?username=" + encodeURIComponent(username))
+      .then(function (res) {
+        return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+      })
+      .then(function (result) {
+        if (!result.ok) throw new Error((result.data && result.data.error) || "Could not check that username.");
+        if (!result.data.found) {
+          renderStatus(null);
+          setStatus(form, "No application on that username yet. Check the spelling, or apply above.", "error");
+          return;
+        }
+        renderStatus(result.data);
+      })
+      .catch(function (err) {
+        renderStatus(null);
+        setStatus(form, err.message || "That did not check. Try again in a minute.", "error");
+      })
+      .finally(function () {
+        if (submit) { submit.disabled = false; submit.textContent = label; }
+      });
+  }
+
+  if (statusForm) {
+    statusForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var input = statusForm.querySelector('[name="username"]');
+      var value = input ? input.value.trim() : "";
+      if (value.length < 2) {
+        setStatus(statusForm, "Type the Roblox username you applied with.", "error");
+        if (input) input.focus();
+        return;
+      }
+      lookupApplication(value, statusForm);
+    });
+  }
+
+  if (applicationForm) {
+    applicationForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var honeypot = applicationForm.querySelector('[name="company"]');
+      if (honeypot && honeypot.value) return;
+      if (!validate(applicationForm)) {
+        setStatus(applicationForm, "Almost — check the fields marked in red.", "error");
+        return;
+      }
+
+      var submit = applicationForm.querySelector('[type="submit"]');
+      var label = submit ? submit.textContent : "";
+      if (submit) { submit.disabled = true; submit.textContent = "Sending…"; }
+      setStatus(applicationForm, "", "info");
+
+      var payload = {
+        roblox: applicationForm.querySelector('[name="roblox"]').value.trim(),
+        discord: applicationForm.querySelector('[name="discord"]').value.trim(),
+        icName: applicationForm.querySelector('[name="icName"]').value.trim(),
+        timezone: applicationForm.querySelector('[name="timezone"]').value,
+        role: applicationForm.querySelector('[name="role"]').value,
+        gunLicense: applicationForm.querySelector('[name="gunLicense"]').value,
+        meleePass: applicationForm.querySelector('[name="meleePass"]').value,
+        why: applicationForm.querySelector('[name="why"]').value.trim(),
+        experience: applicationForm.querySelector('[name="experience"]').value.trim(),
+        extra: applicationForm.querySelector('[name="extra"]').value.trim(),
+        company: ""
+      };
+
+      fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+        .then(function (res) {
+          return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+        })
+        .then(function (result) {
+          if (!result.ok) throw new Error((result.data && result.data.error) || "The application did not send.");
+          var id = (result.data && result.data.id) || "";
+          applicationForm.reset();
+          applicationForm.querySelectorAll(".is-invalid").forEach(function (f) { f.classList.remove("is-invalid"); });
+          setStatus(applicationForm, "Sent" + (id ? " — reference " + id : "") + ". Track it with your Roblox username in the tracker.", "success");
+
+          if (statusForm) {
+            var lookup = statusForm.querySelector('[name="username"]');
+            if (lookup) lookup.value = payload.roblox;
+            lookupApplication(payload.roblox, statusForm);
+          }
+        })
+        .catch(function (err) {
+          setStatus(applicationForm, err.message || "That did not send. Try again, or find us on Discord.", "error");
+        })
+        .finally(function () {
+          if (submit) { submit.disabled = false; submit.textContent = label; }
+        });
+    });
+  }
+
   /* ---------- Tickets ---------- */
   var ticketForm = document.querySelector("[data-ticket-form]");
   var ticketNights = [];

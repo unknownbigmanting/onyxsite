@@ -12,15 +12,16 @@ content; everything else is static.
 | `team.html` | The roster, rendered from content and grouped by department |
 | `events.html` | Calendar, filters and house rules |
 | `tickets.html` | Upcoming nights and the ticket checkout (IC name, Roblox username, quantity) |
-| `careers.html` | Open positions; applications go through Discord |
+| `careers.html` | Open positions, the application form and the status tracker |
 | `contact.html` | Contact form and address |
-| `admin.html` | Staff editor: events, team, reservations and prices |
+| `admin.html` | Staff editor: events, team, orders and applications |
 | `assets/data/content.json` | Events + team — the site's single source of truth |
 | `assets/data/orders.json` | Ticket orders, one entry per checkout |
-| `assets/site.js` | Nav, countdowns, calendar, team, reservations, forms |
+| `assets/data/applications.json` | Crew applications and their statuses |
+| `assets/site.js` | Nav, countdowns, calendar, team, tickets, applications, forms |
 | `assets/admin.js` | Staff editor (talks to `/api`) |
 | `assets/style.css` | All styling |
-| `api/` | Serverless endpoints: login, logout, session, setup, content, orders |
+| `api/` | Serverless endpoints: login, logout, session, setup, content, orders, applications |
 | `server.mjs` | Local dev server (static + `/api`), no dependencies |
 
 ## Run it locally
@@ -165,11 +166,29 @@ choose what it pays), rate-limits submissions and uses the same origin check as 
 API. `orders.json` holds names and Roblox usernames — treat the repository as private data and
 keep it private on GitHub.
 
-## Careers
+## Careers and applications
 
-`careers.html` lists the four open roles and sends people to the club's Discord
-(`https://discord.gg/SFBC8bg79z`) to apply — there is no application form on the site. The same
-invite powers the Discord icon in the header and the footer button; it is set in
+`careers.html` lists the four open roles and carries the application itself: one form asking
+for Roblox username, Discord username, IC name, timezone, the role, whether they have a gun
+licence, whether they have the melee gamepass, why they are suitable, their experience and
+anything extra. Each role card has an **Apply** button that opens the form with that role
+already picked.
+
+Applications are stored in `assets/data/applications.json` with an `APP-…` reference and the
+status `received`. The card beside the form is the tracker: the applicant types the Roblox
+username they applied with and sees their status, the role, the dates, any note the club added
+and a four-step timeline (Submitted → In review → Interview → Decision).
+
+Statuses are `received`, `review`, `interview`, `accepted` and `declined`. The **Applications**
+tab in the admin panel lists every application with its full answers, sets the status, writes
+the note the applicant sees, and deletes entries — each change saves immediately.
+
+`/api/applications` takes a POST from anyone (rate-limited, one open application per username),
+answers `?username=` lookups with only that applicant's status and note, and keeps the full
+list owner-only. `applications.json` sits in `.vercelignore` with the other private data files
+and is never served as a static file.
+
+The Discord invite (`https://discord.gg/SFBC8bg79z`) is still there for questions; it is set in
 `assets/config.js` (`links.discord`) and in the header/footer markup.
 
 ## Deploy to Vercel (free `.vercel.app` domain)
@@ -203,7 +222,9 @@ hero copy stays readable.
 - Fonts (Archivo for headings, Inter for body) load from Google Fonts; images are local.
 - The venue holds 85 people: one basement, opened 2019.
 - Motion respects `prefers-reduced-motion`.
-- `assets/data/admin.json` holds the owner username and scrypt hash, and
-  `assets/data/orders.json` holds IC names and Roblox usernames. Both are committed to the
-  repository: keep the repo **private**, and never link those files directly.
+- `assets/data/admin.json` holds the owner username and scrypt hash,
+  `assets/data/orders.json` holds IC names and Roblox usernames, and
+  `assets/data/applications.json` holds Discord names, answers and application statuses. They
+  are committed to the repository: keep the repo **private**, and never link those files
+  directly.
 - All names, figures, prices and events are fictional, for the New Campton roleplay setting.

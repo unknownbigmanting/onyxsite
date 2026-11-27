@@ -1,6 +1,7 @@
 # Private data, reachable only through the /api functions (they read GitHub).
 assets/data/admin.json
 assets/data/orders.json
+assets/data/applications.json
 
 # Local-only tooling and notes.
 scripts/

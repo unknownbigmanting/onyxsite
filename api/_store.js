@@ -5,6 +5,7 @@ var path = require("path");
 
 var CONTENT_PATH = "assets/data/content.json";
 var ORDERS_PATH = "assets/data/orders.json";
+var APPLICATIONS_PATH = "assets/data/applications.json";
 
 function githubConfig(filePath) {
   var token = process.env.GITHUB_TOKEN;
@@ -122,6 +123,7 @@ async function writeContent(text, message) {
 module.exports = {
   CONTENT_PATH: CONTENT_PATH,
   ORDERS_PATH: ORDERS_PATH,
+  APPLICATIONS_PATH: APPLICATIONS_PATH,
   readText: readText,
   writeText: writeText,
   readContent: readContent,

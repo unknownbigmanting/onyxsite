@@ -98,6 +98,7 @@
         <button class="admin-tab" type="button" role="tab" data-tab="events" aria-selected="true">Events</button>
         <button class="admin-tab" type="button" role="tab" data-tab="team" aria-selected="false">Team</button>
         <button class="admin-tab" type="button" role="tab" data-tab="orders" aria-selected="false">Orders</button>
+        <button class="admin-tab" type="button" role="tab" data-tab="applications" aria-selected="false">Applications</button>
       </div>
 
       <!-- Events -->
@@ -281,6 +282,39 @@
             </p>
             <p class="admin-note">
               Orders come from <a href="tickets.html" target="_blank" rel="noopener">tickets.html</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Applications -->
+      <div data-tab-panel="applications" hidden>
+        <div class="admin-grid">
+          <div class="admin-panel">
+            <h2>Applications <span class="field-hint" data-app-count></span></h2>
+            <div class="admin-list" data-app-list></div>
+            <div class="admin-empty" data-app-empty hidden>No applications yet.</div>
+            <p class="admin-note">
+              The status and the note are what the applicant sees when they check their Roblox
+              username on <a href="careers.html#status" target="_blank" rel="noopener">careers.html</a>.
+              They save the moment you change them.
+            </p>
+          </div>
+
+          <div class="admin-panel">
+            <h2>At a glance</h2>
+            <div class="grid grid--2">
+              <div class="card"><h3 data-app-open>0</h3><p>Open</p></div>
+              <div class="card"><h3 data-app-accepted>0</h3><p>Accepted</p></div>
+            </div>
+            <p class="admin-note" style="margin-top:20px">
+              Applications come in from <a href="careers.html" target="_blank" rel="noopener">careers.html</a>.
+              Move one to <strong>Interview</strong> once you have messaged them, then
+              <strong>Accepted</strong> or <strong>Not this time</strong> after the chat.
+            </p>
+            <p class="admin-note">
+              A gun licence and the melee gamepass are listed on every application — use them to
+              decide who can work the door and who can carry a bat.
             </p>
           </div>
         </div>

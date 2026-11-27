@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Careers — Club Onyx</title>
-  <meta name="description" content="Open positions at Club Onyx, New Campton: Head of Security, Head of Hospitality, Security, and Server / Floor Staff. Apply through our Discord.">
+  <meta name="description" content="Open positions at Club Onyx, New Campton: Head of Security, Head of Hospitality, Security, and Server / Floor Staff. Apply online and track your application with your Roblox username.">
   <meta name="theme-color" content="#04060b">
   <meta property="og:title" content="Careers — Club Onyx">
-  <meta property="og:description" content="Head of Security, Head of Hospitality, Security and Server / Floor Staff. Applications through our Discord.">
+  <meta property="og:description" content="Head of Security, Head of Hospitality, Security and Server / Floor Staff. Apply online and track it with your username.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/img/onyx-wordmark.jpg">
   <link rel="icon" href="assets/img/favicon.png" type="image/png">
@@ -54,11 +54,12 @@
         <span class="eyebrow">Work with us</span>
         <h1>Careers at Onyx</h1>
         <p>
-          Open roles across security and hospitality. Everything is posted on our Discord
-          server — that is where you apply and where we reply.
+          Open roles across security and hospitality. Fill in one application, then come back
+          here any time with your Roblox username to see exactly where it is.
         </p>
         <div class="hero-actions" style="margin:26px 0 0">
-          <a class="btn btn--primary" href="https://discord.gg/SFBC8bg79z" data-link="discord" target="_blank" rel="noopener noreferrer">Apply on Discord</a>
+          <a class="btn btn--primary" href="#apply">Apply now</a>
+          <a class="btn btn--ghost" href="#status">Check my application</a>
         </div>
       </div>
     </section>
@@ -68,7 +69,7 @@
         <div class="section-head" data-reveal>
           <span class="eyebrow">Open positions</span>
           <h2>Four roles, open now</h2>
-          <p>Join the Discord and check the employment channel for the role you want.</p>
+          <p>Read the role, hit apply, and the form below opens with it already picked.</p>
         </div>
 
         <div class="role-card" data-reveal>
@@ -81,6 +82,7 @@
           </div>
           <div class="role-actions">
             <span class="badge badge--open">Open</span>
+            <button class="btn btn--ghost btn--small" type="button" data-apply-role="Head of Security">Apply</button>
           </div>
         </div>
 
@@ -94,6 +96,7 @@
           </div>
           <div class="role-actions">
             <span class="badge badge--open">Open</span>
+            <button class="btn btn--ghost btn--small" type="button" data-apply-role="Head of Hospitality">Apply</button>
           </div>
         </div>
 
@@ -107,6 +110,7 @@
           </div>
           <div class="role-actions">
             <span class="badge badge--open">Open</span>
+            <button class="btn btn--ghost btn--small" type="button" data-apply-role="Security">Apply</button>
           </div>
         </div>
 
@@ -120,18 +124,131 @@
           </div>
           <div class="role-actions">
             <span class="badge badge--open">Open</span>
+            <button class="btn btn--ghost btn--small" type="button" data-apply-role="Server / Floor Staff">Apply</button>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="cta-band">
+    <section class="section section--panel" id="apply">
       <div class="container">
-        <span class="eyebrow" style="justify-content:center">How to apply</span>
-        <h2>Employment opportunities are on our Discord</h2>
-        <p>Join the server, open the employment channel and post your name, the role and when you can work. The team replies there.</p>
-        <div class="cta-actions">
-          <a class="btn btn--primary" href="https://discord.gg/SFBC8bg79z" data-link="discord" target="_blank" rel="noopener noreferrer">Join the Discord</a>
+        <div class="apply-grid">
+          <div class="form-wrap" data-reveal>
+            <span class="eyebrow">Application</span>
+            <h2>Apply to the crew</h2>
+            <p>
+              One form, and everything we need to make a decision. Nothing is sent anywhere else,
+              and you can check the answer with your username.
+            </p>
+
+            <form data-application-form novalidate>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="a-roblox">Roblox username <span class="req">*</span></label>
+                  <input id="a-roblox" name="roblox" type="text" required maxlength="40" autocomplete="off" placeholder="yourusername">
+                  <p class="field-hint">This is also what you use to track the application.</p>
+                </div>
+                <div class="field">
+                  <label for="a-discord">Discord username <span class="req">*</span></label>
+                  <input id="a-discord" name="discord" type="text" required maxlength="60" autocomplete="off" placeholder="yourname">
+                </div>
+                <div class="field">
+                  <label for="a-ic">IC name <span class="req">*</span></label>
+                  <input id="a-ic" name="icName" type="text" required maxlength="60" placeholder="Name you go by in the city">
+                </div>
+                <div class="field">
+                  <label for="a-timezone">Timezone <span class="req">*</span></label>
+                  <select id="a-timezone" name="timezone" required>
+                    <option value="">Choose…</option>
+                    <option>GMT (UTC+0)</option>
+                    <option>BST (UTC+1)</option>
+                    <option>CET (UTC+1)</option>
+                    <option>EST (UTC-5)</option>
+                    <option>CST (UTC-6)</option>
+                    <option>PST (UTC-8)</option>
+                    <option>AEST (UTC+10)</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="field field--full">
+                  <label for="role">Role you are applying for <span class="req">*</span></label>
+                  <select id="role" name="role" required>
+                    <option value="">Choose a role…</option>
+                    <option>Head of Security</option>
+                    <option>Head of Hospitality</option>
+                    <option>Security</option>
+                    <option>Server / Floor Staff</option>
+                    <option>Any role</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="a-gun">Do you have a gun licence? <span class="req">*</span></label>
+                  <select id="a-gun" name="gunLicense" required>
+                    <option value="">Choose…</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="a-melee">Melee gamepass (to buy bats)? <span class="req">*</span></label>
+                  <select id="a-melee" name="meleePass" required>
+                    <option value="">Choose…</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                  <p class="field-hint">The pass that lets you purchase bats in the city.</p>
+                </div>
+                <div class="field field--full">
+                  <label for="a-why">Why are you suitable for the role? <span class="req">*</span></label>
+                  <textarea id="a-why" name="why" required minlength="30" maxlength="1200" placeholder="What you would bring to the door team, the bar, the floor…" style="min-height:110px"></textarea>
+                </div>
+                <div class="field field--full">
+                  <label for="a-experience">Experience <span class="field-hint" style="display:inline">(optional)</span></label>
+                  <textarea id="a-experience" name="experience" maxlength="1200" placeholder="Previous roles, other venues, security or hospitality work, anything relevant." style="min-height:100px"></textarea>
+                </div>
+                <div class="field field--full">
+                  <label for="a-extra">Any extra information <span class="field-hint" style="display:inline">(optional)</span></label>
+                  <textarea id="a-extra" name="extra" maxlength="600" placeholder="Availability, how to reach you, anything else we should know."></textarea>
+                </div>
+              </div>
+
+              <label class="hp" aria-hidden="true">Company <input type="text" name="company" tabindex="-1" autocomplete="off"></label>
+              <div class="form-foot">
+                <p class="form-status" data-status role="status" aria-live="polite"></p>
+                <button class="btn btn--primary" type="submit">Send application</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="apply-side" data-reveal>
+            <div class="card status-card" id="status">
+              <span class="eyebrow">Track it</span>
+              <h3>Check your application</h3>
+              <p>Put in the Roblox username you applied with and we will show you where it is.</p>
+
+              <form data-status-form novalidate>
+                <div class="field">
+                  <label for="a-lookup">Roblox username</label>
+                  <input id="a-lookup" name="username" type="text" autocomplete="off" maxlength="40" placeholder="yourusername" required>
+                </div>
+                <button class="btn btn--primary btn--small" type="submit" style="margin-top:14px">Check status</button>
+                <p class="form-status" data-status role="status" aria-live="polite"></p>
+              </form>
+
+              <div class="status-result" data-status-result hidden></div>
+            </div>
+
+            <ul class="checklist" style="margin-top:28px">
+              <li>Applications are read in the order they arrive</li>
+              <li>The status here changes the moment we change it</li>
+              <li>If it says interview, watch your Discord DMs</li>
+            </ul>
+
+            <p class="admin-note" style="border-color: var(--line-strong)">
+              Questions before you apply? Ask in
+              <a href="https://discord.gg/SFBC8bg79z" data-link="discord" target="_blank" rel="noopener noreferrer">the Discord</a>.
+            </p>
+          </div>
         </div>
       </div>
     </section>
