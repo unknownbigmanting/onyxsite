@@ -65,6 +65,7 @@ function sanitize(input) {
       status: STATUSES.indexOf(raw.status) !== -1 ? raw.status : "open",
       statusLabel: text(raw.statusLabel, 60) || "Open",
       entry: text(raw.entry, 120),
+      ticket: Math.min(Math.max(Math.round(Number(raw.ticket) || 0), 0), 100000),
       description: multiline(raw.description, 600),
       featured: !!raw.featured
     };

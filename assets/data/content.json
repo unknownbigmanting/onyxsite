@@ -16,6 +16,7 @@
       "status": "limited",
       "statusLabel": "Limited tickets",
       "entry": "$25 · 21+",
+      "ticket": 25,
       "description": "Every room open, two guest sets, and the countdown on the Main Floor. The biggest night we run all year.",
       "featured": true
     },
@@ -32,6 +33,7 @@
       "status": "open",
       "statusLabel": "Open",
       "entry": "Free with guest list",
+      "ticket": 0,
       "description": "One DJ, one room, no requests. Halcyon plays the records that never make the Main Floor.",
       "featured": false
     },
@@ -48,6 +50,7 @@
       "status": "open",
       "statusLabel": "Open to all",
       "entry": "Free entry",
+      "ticket": 0,
       "description": "Early doors, no headliner, free entry for New Campton locals. Meet the team and the people behind the club.",
       "featured": false
     },
@@ -64,6 +67,7 @@
       "status": "announced",
       "statusLabel": "Announced",
       "entry": "$15 · guest list priority",
+      "ticket": 15,
       "description": "Guest headline set plus a full lighting rebuild of the Main Floor. Announced early to the list only.",
       "featured": false
     }

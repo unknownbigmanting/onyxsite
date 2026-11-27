@@ -32,7 +32,7 @@
       <form class="admin-gate" data-login>
         <span class="eyebrow">Internal</span>
         <h1>Staff sign in</h1>
-        <p>Calendar, roster and reservations. Your session is a HS256-signed token in a secure
+        <p>Calendar, roster and ticket orders. Your session is a HS256-signed token in a secure
         cookie, good for eight hours.</p>
         <div class="field">
           <label for="username">Username</label>
@@ -85,7 +85,7 @@
       <div class="admin-bar">
         <div>
           <h1>Site editor</h1>
-          <p>Events and team. <span class="admin-save-state" data-save-state>Saved</span></p>
+          <p>Events, team and orders. <span class="admin-save-state" data-save-state>Saved</span></p>
         </div>
         <div class="admin-bar-actions">
           <button class="btn btn--primary btn--small" type="button" data-action="save">Save changes</button>
@@ -97,7 +97,7 @@
       <div class="admin-tabs" role="tablist" aria-label="Editor sections">
         <button class="admin-tab" type="button" role="tab" data-tab="events" aria-selected="true">Events</button>
         <button class="admin-tab" type="button" role="tab" data-tab="team" aria-selected="false">Team</button>
-        <button class="admin-tab" type="button" role="tab" data-tab="reservations" aria-selected="false">Reservations</button>
+        <button class="admin-tab" type="button" role="tab" data-tab="orders" aria-selected="false">Orders</button>
       </div>
 
       <!-- Events -->
@@ -136,6 +136,11 @@
                 <div class="field">
                   <label for="e-entry">Entry</label>
                   <input id="e-entry" name="entry" type="text" placeholder="Free before 23:00 · $10 after">
+                </div>
+                <div class="field">
+                  <label for="e-ticket">Ticket price ($)</label>
+                  <input id="e-ticket" name="ticket" type="number" min="0" step="1" placeholder="25">
+                  <p class="field-hint">Charged per ticket at the door. 0 means free entry.</p>
                 </div>
                 <div class="field">
                   <label for="e-status">Status</label>
@@ -234,41 +239,33 @@
         </div>
       </div>
 
-      <!-- Reservations -->
-      <div data-tab-panel="reservations" hidden>
+      <!-- Orders -->
+      <div data-tab-panel="orders" hidden>
         <div class="admin-grid">
           <div class="admin-panel">
-            <h2>Reservations <span class="field-hint" data-res-count></span></h2>
-            <div class="admin-list" data-res-list></div>
-            <div class="admin-empty" data-res-empty hidden>No reservations yet.</div>
+            <h2>Orders <span class="field-hint" data-order-count></span></h2>
+            <div class="admin-list" data-order-list></div>
+            <div class="admin-empty" data-order-empty hidden>No ticket orders yet.</div>
             <p class="admin-note">
-              Guests confirm the price online and pay at the door. Mark a booking
-              <strong>paid</strong> once the money is in — that saves straight away.
+              Search by IC name or Roblox username, take the cash and mark the order
+              <strong>paid</strong> — that saves straight away.
             </p>
           </div>
 
           <div class="admin-panel">
-            <h2>Prices</h2>
-            <form data-price-form novalidate>
-              <div class="form-grid">
-                <div class="field">
-                  <label for="p-guest">Guest list <span class="field-hint" style="display:inline">(per person)</span></label>
-                  <input id="p-guest" name="guest" type="number" min="0" step="1" required>
-                </div>
-                <div class="field">
-                  <label for="p-table">Table</label>
-                  <input id="p-table" name="table" type="number" min="0" step="1" required>
-                </div>
-                <div class="field">
-                  <label for="p-booth">VIP booth</label>
-                  <input id="p-booth" name="booth" type="number" min="0" step="1" required>
-                </div>
-              </div>
-              <p class="field-hint">These are the prices shown on the reservations page and charged at the door.</p>
-              <div class="form-foot">
-                <button class="btn btn--primary" type="submit">Save prices</button>
-              </div>
-            </form>
+            <h2>At the door</h2>
+            <div class="grid grid--2">
+              <div class="card"><h3 data-order-tickets>0</h3><p>Tickets</p></div>
+              <div class="card"><h3 data-order-due>$0</h3><p>Due at the door</p></div>
+            </div>
+            <p class="admin-note" style="margin-top:20px">
+              Prices are set per night: open <strong>Events</strong>, edit a night and fill in
+              <strong>Ticket price</strong>. Free nights still collect an order so you know who is
+              coming.
+            </p>
+            <p class="admin-note">
+              Orders come from <a href="tickets.html" target="_blank" rel="noopener">tickets.html</a>.
+            </p>
           </div>
         </div>
       </div>

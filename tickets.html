@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Reserve a night — Club Onyx</title>
-  <meta name="description" content="Reserve a table, the VIP booth or guest list at Club Onyx, New Campton. Confirm the price here and pay at the door.">
+  <title>Upcoming nights &amp; tickets — Club Onyx</title>
+  <meta name="description" content="Upcoming nights at Club Onyx, New Campton. Buy tickets with your IC name and Roblox username and pay at the door.">
   <meta name="theme-color" content="#04060b">
-  <meta property="og:title" content="Reserve a night — Club Onyx">
-  <meta property="og:description" content="Pick your night, confirm the price, pay at the door.">
+  <meta property="og:title" content="Upcoming nights — Club Onyx">
+  <meta property="og:description" content="Buy tickets for upcoming nights. Pay at the door.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/img/onyx-wordmark.jpg">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
@@ -29,7 +29,7 @@
         <a href="index.html">Home</a>
         <a href="team.html">Team</a>
         <a href="events.html">Events</a>
-        <a href="reserve.html" aria-current="page">Reserve</a>
+        <a href="tickets.html" aria-current="page">Tickets</a>
         <a href="careers.html">Careers</a>
         <a href="contact.html">Contact</a>
       </nav>
@@ -49,89 +49,87 @@
     <section class="page-hero">
       <div class="container">
         <nav class="breadcrumbs" aria-label="Breadcrumb">
-          <a href="index.html">Home</a><span>/</span><span aria-current="page">Reserve</span>
+          <a href="index.html">Home</a><span>/</span><span aria-current="page">Tickets</span>
         </nav>
-        <span class="eyebrow">Reservations</span>
-        <h1>Reserve a night</h1>
+        <span class="eyebrow">On sale</span>
+        <h1>Upcoming nights</h1>
         <p>
-          Pick the night, the headcount and what you need. The exact price is shown before you
-          confirm, and it is paid at the door — nothing is charged online.
+          Pick a night, take as many tickets as you need. Orders are held under your IC name and
+          Roblox username, and paid at the door.
         </p>
       </div>
     </section>
 
-    <section class="section" id="reserve">
+    <section class="section section--tight" id="nights">
+      <div class="container">
+        <div class="events-list" data-nights-list>
+          <div class="empty-state">Loading the calendar…</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--panel" id="checkout">
       <div class="container">
         <div class="split" style="align-items:start">
           <div class="form-wrap" data-reveal>
-            <h2>Your reservation</h2>
-            <p>One booking per group. The floor team holds your name at the door.</p>
-            <form data-reserve-form novalidate>
+            <h2>Buy tickets</h2>
+            <p>One order per group. Bring your IC name and Roblox username to the door and we will pull the order up.</p>
+            <form data-ticket-form novalidate>
               <div class="form-grid">
                 <div class="field field--full">
-                  <label for="r-night">Night <span class="req">*</span></label>
-                  <select id="r-night" name="night" required data-night-select>
+                  <label for="t-night">Night <span class="req">*</span></label>
+                  <select id="t-night" name="eventId" required data-night-select>
                     <option value="">Loading the calendar…</option>
                   </select>
                 </div>
                 <div class="field">
-                  <label for="r-name">Name <span class="req">*</span></label>
-                  <input id="r-name" name="name" type="text" required autocomplete="name" placeholder="Name at the door">
+                  <label for="t-qty">Tickets <span class="req">*</span></label>
+                  <input id="t-qty" name="qty" type="number" min="1" max="20" step="1" value="1" required>
                 </div>
                 <div class="field">
-                  <label for="r-contact">Discord <span class="req">*</span></label>
-                  <input id="r-contact" name="contact" type="text" required placeholder="yourname">
-                </div>
-                <div class="field">
-                  <label for="r-party">How many of you? <span class="req">*</span></label>
-                  <input id="r-party" name="party" type="number" min="1" max="20" step="1" value="2" required>
-                </div>
-                <div class="field">
-                  <label for="r-type">What do you need? <span class="req">*</span></label>
-                  <select id="r-type" name="type" required data-type-select>
-                    <option>Guest list</option>
-                    <option>Table</option>
-                    <option>Booth</option>
-                  </select>
+                  <label for="t-ic">IC name <span class="req">*</span></label>
+                  <input id="t-ic" name="icName" type="text" required maxlength="60" placeholder="Name on the order">
                 </div>
                 <div class="field field--full">
-                  <label for="r-notes">Anything else? <span class="field-hint" style="display:inline">(optional)</span></label>
-                  <textarea id="r-notes" name="notes" placeholder="Birthday, arrival time, accessibility…"></textarea>
+                  <label for="t-roblox">Roblox username <span class="req">*</span></label>
+                  <input id="t-roblox" name="roblox" type="text" required maxlength="40" autocomplete="off" placeholder="yourusername">
+                </div>
+                <div class="field field--full">
+                  <label for="t-notes">Anything else? <span class="field-hint" style="display:inline">(optional)</span></label>
+                  <textarea id="t-notes" name="notes" placeholder="Birthday, arrival time, accessibility…"></textarea>
                 </div>
               </div>
 
               <div class="price-box" data-price-box>
-                <div class="price-row"><span>Guest list</span><b data-price-guest>—</b></div>
-                <div class="price-row"><span>Table</span><b data-price-table>—</b></div>
-                <div class="price-row"><span>VIP booth</span><b data-price-booth>—</b></div>
-                <div class="price-total"><span>Due at the door</span><b data-price-total>—</b></div>
-                <p class="price-hint" data-price-hint></p>
+                <div class="price-row"><span>Ticket price</span><b data-ticket-each>—</b></div>
+                <div class="price-row"><span>Paid at the door</span><b>Cash on the night</b></div>
+                <div class="price-total"><span>Total</span><b data-ticket-total>—</b></div>
               </div>
 
               <label class="check">
                 <input type="checkbox" name="confirm" required>
-                <span data-confirm-label>I understand the amount is paid at the door.</span>
+                <span data-ticket-confirm>I understand the order is paid at the door.</span>
               </label>
 
               <label class="hp" aria-hidden="true">Company <input type="text" name="company" tabindex="-1" autocomplete="off"></label>
               <div class="form-foot">
                 <p class="form-status" data-status role="status" aria-live="polite"></p>
-                <button class="btn btn--primary" type="submit">Confirm reservation</button>
+                <button class="btn btn--primary" type="submit">Place order</button>
               </div>
             </form>
           </div>
 
           <div data-reveal>
             <span class="eyebrow">How it works</span>
-            <h2 style="font-size:1.8rem">Reserved here, paid at the door</h2>
+            <h2 style="font-size:1.8rem">Ordered here, paid at the door</h2>
             <ul class="checklist">
-              <li>Reserve on this page — no card, no online payment</li>
-              <li>The price you confirm is what you pay at the door</li>
-              <li>Tables are held until 23:30, then released</li>
+              <li>Buy for yourself or add tickets for the people coming with you</li>
+              <li>The total on the order is what you pay on the night</li>
+              <li>Give your IC name and Roblox username at the door — the list is pulled up</li>
             </ul>
             <div class="card" style="margin-top:28px">
-              <h3>Guest list</h3>
-              <p>Guest list numbers are per person. Tables and the VIP booth are one price for the group.</p>
+              <h3>Ticket price</h3>
+              <p>Each night has its own price, set by the club. Free nights still get an order so we know you are coming.</p>
             </div>
           </div>
         </div>

@@ -178,7 +178,7 @@
           '</div>' +
           '<p class="lead" style="max-width:50ch">' + esc(ev.description) + '</p>' +
           '<div class="hero-actions" style="margin:26px 0 0">' +
-            '<a class="btn btn--primary" href="reserve.html">Reserve a night</a>' +
+            '<a class="btn btn--primary" href="tickets.html">Buy tickets</a>' +
             '<a class="btn btn--ghost" href="' + (isEventsPage ? "#calendar" : "events.html#calendar") + '">Full calendar</a>' +
           '</div>' +
         '</div>' +
@@ -212,7 +212,7 @@
           '</div>' +
         '</div>' +
         '<div class="event-cta">' +
-          '<a class="btn btn--primary btn--small" href="reserve.html?night=' + encodeURIComponent(ev.title) + '">Reserve</a>' +
+          '<a class="btn btn--primary btn--small" href="tickets.html?night=' + encodeURIComponent(ev.id) + '">Buy tickets</a>' +
           '<span class="' + badge + '">' + esc(ev.statusLabel || "Open") + '</span>' +
         '</div>' +
       '</article>';
@@ -315,7 +315,7 @@
     .then(function (data) {
       renderCalendar((data && data.events) || []);
       renderTeam((data && data.team) || []);
-      fillReserveSelect((data && data.events) || []);
+      fillTicketNights((data && data.events) || []);
       tickCountdowns();
     })
     .catch(contentFailed);
@@ -441,107 +441,133 @@
     });
   });
 
-  /* ---------- Reservations ---------- */
-  var reserveForm = document.querySelector("[data-reserve-form]");
-  var reservePrices = null;
+  /* ---------- Tickets ---------- */
+  var ticketForm = document.querySelector("[data-ticket-form]");
+  var ticketNights = [];
 
   function money(value) {
-    var sign = (reservePrices && reservePrices.currency) || "$";
-    return sign + Number(value || 0).toLocaleString("en-GB");
+    return "$" + Number(value || 0).toLocaleString("en-GB");
   }
 
-  function reserveAmount() {
-    if (!reserveForm || !reservePrices) return 0;
-    var type = reserveForm.querySelector('[name="type"]').value;
-    var party = parseInt(reserveForm.querySelector('[name="party"]').value, 10) || 0;
-    if (type === "Table") return reservePrices.table;
-    if (type === "Booth") return reservePrices.booth;
-    return reservePrices.guest * Math.max(party, 0);
+  function nightById(id) {
+    return ticketNights.filter(function (ev) { return ev.id === id; })[0] || null;
   }
 
-  function updateReserveSummary() {
-    if (!reserveForm) return;
-    var total = reserveForm.querySelector("[data-price-total]");
-    var label = reserveForm.querySelector("[data-confirm-label]");
-    var amount = reserveAmount();
-    if (total) total.textContent = reservePrices ? money(amount) : "—";
+  function ticketTotal() {
+    if (!ticketForm) return 0;
+    var ev = nightById(ticketForm.querySelector('[name="eventId"]').value);
+    if (!ev) return 0;
+    var qty = parseInt(ticketForm.querySelector('[name="qty"]').value, 10) || 0;
+    return (Number(ev.ticket) || 0) * Math.max(qty, 0);
+  }
+
+  function updateTicketSummary() {
+    if (!ticketForm) return;
+    var ev = nightById(ticketForm.querySelector('[name="eventId"]').value);
+    var each = ticketForm.querySelector("[data-ticket-each]");
+    var total = ticketForm.querySelector("[data-ticket-total]");
+    var label = ticketForm.querySelector("[data-ticket-confirm]");
+    var amount = ticketTotal();
+    if (each) each.textContent = !ev ? "—" : (Number(ev.ticket) > 0 ? money(ev.ticket) + " each" : "Free entry");
+    if (total) total.textContent = ev ? money(amount) : "—";
     if (label) {
-      label.textContent = reservePrices && amount > 0
+      label.textContent = ev && amount > 0
         ? "I understand " + money(amount) + " is paid at the door."
-        : "I understand the amount is paid at the door.";
+        : "I understand the order is paid at the door.";
     }
   }
 
-  function fillReserveSelect(events) {
+  function fillTicketNights(events) {
+    ticketNights = upcoming(events);
+    var list = document.querySelector("[data-nights-list]");
     var select = document.querySelector("[data-night-select]");
-    if (!select) return;
-    var list = upcoming(events);
-    if (!list.length) {
-      select.innerHTML = '<option value="">No nights on sale right now</option>';
-      return;
+
+    if (select) {
+      select.innerHTML = ticketNights.length
+        ? '<option value="">Pick a night</option>' + ticketNights.map(function (ev) {
+            return '<option value="' + esc(ev.id) + '">' + esc(ev.title + " — " + ev.displayDate) + '</option>';
+          }).join("")
+        : '<option value="">No nights on sale right now</option>';
     }
-    select.innerHTML = '<option value="">Pick a night</option>' + list.map(function (ev) {
-      var value = ev.title + " — " + ev.displayDate;
-      return '<option value="' + esc(value) + '">' + esc(value) + '</option>';
-    }).join("");
+
+    if (list) {
+      list.innerHTML = ticketNights.length ? ticketNights.map(function (ev) {
+        var d = new Date(ev.date);
+        var price = Number(ev.ticket) || 0;
+        return '' +
+          '<article class="event-card" data-reveal>' +
+            '<div class="event-date">' +
+              '<b>' + pad(d.getDate()) + '</b><small>' + MONTHS[d.getMonth()] + '</small><em>' + d.getFullYear() + '</em>' +
+            '</div>' +
+            '<div class="event-body">' +
+              '<h3>' + esc(ev.title) + '</h3>' +
+              '<p>' + esc(ev.description) + '</p>' +
+              '<div class="event-info">' +
+                '<span>' + esc(ev.time) + '</span>' +
+                '<span>' + esc(ev.venue) + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="event-cta">' +
+              '<span class="badge' + (price > 0 ? "" : " badge--open") + '">' + (price > 0 ? money(price) + ' per ticket' : "Free entry") + '</span>' +
+              '<button class="btn btn--primary btn--small" type="button" data-buy="' + esc(ev.id) + '">Buy tickets</button>' +
+            '</div>' +
+          '</article>';
+      }).join("") : '<div class="empty-state">Nothing on sale right now. The next season is being locked in.</div>';
+      reveal(list);
+    }
 
     var wanted = new URLSearchParams(window.location.search).get("night");
-    if (!wanted) return;
-    var match = Array.prototype.find.call(select.options, function (o) {
-      return o.value.toLowerCase().indexOf(wanted.toLowerCase()) === 0;
-    });
-    if (match) select.value = match.value;
+    if (wanted && select) {
+      var match = ticketNights.filter(function (ev) {
+        return ev.id === wanted || ev.title.toLowerCase() === wanted.toLowerCase();
+      })[0];
+      if (match) select.value = match.id;
+    }
+    updateTicketSummary();
   }
 
-  if (reserveForm) {
-    fetch("/api/reserve", { cache: "no-store" })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (!data || !data.prices) return;
-        reservePrices = data.prices;
-        var guest = reserveForm.querySelector("[data-price-guest]");
-        var table = reserveForm.querySelector("[data-price-table]");
-        var booth = reserveForm.querySelector("[data-price-booth]");
-        if (guest) guest.textContent = money(reservePrices.guest) + " per person";
-        if (table) table.textContent = money(reservePrices.table);
-        if (booth) booth.textContent = money(reservePrices.booth);
-        updateReserveSummary();
-      })
-      .catch(function () {
-        var hint = reserveForm.querySelector("[data-price-hint]");
-        if (hint) hint.textContent = "Prices could not load. The team will confirm the amount with you at the door.";
-      });
+  if (ticketForm) {
+    ticketForm.addEventListener("input", updateTicketSummary);
+    ticketForm.addEventListener("change", updateTicketSummary);
+    updateTicketSummary();
 
-    reserveForm.addEventListener("input", updateReserveSummary);
-    reserveForm.addEventListener("change", updateReserveSummary);
-    updateReserveSummary();
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-buy]");
+      if (!btn) return;
+      var select = ticketForm.querySelector('[name="eventId"]');
+      if (select) select.value = btn.getAttribute("data-buy");
+      updateTicketSummary();
+      var target = document.querySelector("#checkout");
+      if (target) target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+      var qty = ticketForm.querySelector('[name="qty"]');
+      if (qty) window.setTimeout(function () { qty.focus({ preventScroll: true }); }, reduceMotion ? 0 : 480);
+    });
 
-    reserveForm.addEventListener("submit", function (e) {
+    ticketForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      var honeypot = reserveForm.querySelector('[name="company"]');
+      var honeypot = ticketForm.querySelector('[name="company"]');
       if (honeypot && honeypot.value) return;
-      if (!validate(reserveForm)) {
-        setStatus(reserveForm, "Almost — check the fields marked in red.", "error");
+      if (!validate(ticketForm)) {
+        setStatus(ticketForm, "Almost — check the fields marked in red.", "error");
         return;
       }
 
-      var submit = reserveForm.querySelector('[type="submit"]');
+      var submit = ticketForm.querySelector('[type="submit"]');
       var label = submit ? submit.textContent : "";
-      if (submit) { submit.disabled = true; submit.textContent = "Reserving…"; }
-      setStatus(reserveForm, "", "info");
+      if (submit) { submit.disabled = true; submit.textContent = "Placing order…"; }
+      setStatus(ticketForm, "", "info");
 
       var payload = {
-        night: reserveForm.querySelector('[name="night"]').value,
-        name: reserveForm.querySelector('[name="name"]').value.trim(),
-        contact: reserveForm.querySelector('[name="contact"]').value.trim(),
-        party: parseInt(reserveForm.querySelector('[name="party"]').value, 10) || 0,
-        type: reserveForm.querySelector('[name="type"]').value,
-        notes: reserveForm.querySelector('[name="notes"]').value.trim(),
+        eventId: ticketForm.querySelector('[name="eventId"]').value,
+        qty: parseInt(ticketForm.querySelector('[name="qty"]').value, 10) || 0,
+        icName: ticketForm.querySelector('[name="icName"]').value.trim(),
+        roblox: ticketForm.querySelector('[name="roblox"]').value.trim(),
+        notes: ticketForm.querySelector('[name="notes"]').value.trim(),
         confirm: true,
         company: ""
       };
 
-      fetch("/api/reserve", {
+      fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -550,16 +576,16 @@
           return res.json().then(function (data) { return { ok: res.ok, data: data }; });
         })
         .then(function (result) {
-          if (!result.ok) throw new Error((result.data && result.data.error) || "Reservation failed");
-          var amount = result.data && typeof result.data.amount === "number" ? result.data.amount : reserveAmount();
+          if (!result.ok) throw new Error((result.data && result.data.error) || "Order failed");
+          var total = result.data && typeof result.data.total === "number" ? result.data.total : ticketTotal();
           var id = (result.data && result.data.id) || "";
-          reserveForm.reset();
-          reserveForm.querySelectorAll(".is-invalid").forEach(function (f) { f.classList.remove("is-invalid"); });
-          updateReserveSummary();
-          setStatus(reserveForm, "Reserved" + (id ? " — reference " + id : "") + ". " + money(amount) + " is due at the door.", "success");
+          ticketForm.reset();
+          ticketForm.querySelectorAll(".is-invalid").forEach(function (f) { f.classList.remove("is-invalid"); });
+          updateTicketSummary();
+          setStatus(ticketForm, "Order placed" + (id ? " — reference " + id : "") + ". " + money(total) + " is paid at the door.", "success");
         })
         .catch(function (err) {
-          setStatus(reserveForm, err.message || "That did not send. Try again or message us on Discord.", "error");
+          setStatus(ticketForm, err.message || "That did not send. Try again or message us on Discord.", "error");
         })
         .finally(function () {
           if (submit) { submit.disabled = false; submit.textContent = label; }

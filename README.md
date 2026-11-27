@@ -11,16 +11,16 @@ content; everything else is static.
 | `index.html` | Home: hero, rotating Cartier banner, about, next night, team preview, gallery, careers |
 | `team.html` | The roster, rendered from content and grouped by department |
 | `events.html` | Calendar, filters and house rules |
-| `reserve.html` | Reservation form: night, party size, price, paid at the door |
+| `tickets.html` | Upcoming nights and the ticket checkout (IC name, Roblox username, quantity) |
 | `careers.html` | Open positions; applications go through Discord |
 | `contact.html` | Contact form and address |
 | `admin.html` | Staff editor: events, team, reservations and prices |
 | `assets/data/content.json` | Events + team — the site's single source of truth |
-| `assets/data/reservations.json` | Reservations plus the prices set in the admin panel |
+| `assets/data/orders.json` | Ticket orders, one entry per checkout |
 | `assets/site.js` | Nav, countdowns, calendar, team, reservations, forms |
 | `assets/admin.js` | Staff editor (talks to `/api`) |
 | `assets/style.css` | All styling |
-| `api/` | Serverless endpoints: login, logout, session, content, reserve, reservations |
+| `api/` | Serverless endpoints: login, logout, session, setup, content, orders |
 | `server.mjs` | Local dev server (static + `/api`), no dependencies |
 
 ## Run it locally
@@ -138,23 +138,25 @@ changes and prices save as you make them.
 If the API is unreachable (for example the site is served by a plain static server), the
 editor tells you — it will not pretend to save.
 
-## Reservations
+## Tickets
 
-`reserve.html` is the only booking form. A visitor picks a night, gives a name and Discord,
-the party size and what they need (guest list, table or the VIP booth). The page shows the
-price live, they tick to confirm the amount, and nothing is charged online — they pay at the
-door.
+`tickets.html` is the checkout. It lists the upcoming nights (from `content.json`), each with
+the price set on that event, and the form asks for the night, how many tickets, an **IC name**
+and a **Roblox username**. The total is shown live and must be confirmed, nothing is charged
+online, and the order is paid at the door — the door team looks it up by IC name or Roblox
+username.
 
-Prices live in the admin panel under **Reservations → Prices**: guest list is per person, table
-and VIP booth are one price for the group. Each booking is stored in
-`assets/data/reservations.json` with its night, party size, amount and an `ONX-…` reference,
-and the panel lists who is coming, what they owe and whether it has been paid.
+Set the price per night in **Events**: the event form has a **Ticket price ($)** field, `0`
+meaning free entry (you still collect an order so you know who is coming).
 
-`/api/reserve` recomputes the price on the server (the browser cannot choose what it pays),
-rate-limits submissions and uses the same origin check as the rest of the API.
-`reservations.json` holds names and Discord handles — treat the repository as private data,
-keep it private on GitHub, or move that file somewhere only you can read before taking real
-bookings.
+Each checkout is stored in `assets/data/orders.json` with its `ONX-…` reference, night, ticket
+price, quantity, total and status. The **Orders** tab in the admin panel lists them, totals the
+tickets and the cash still due, and lets you mark an order paid or delete it.
+
+`/api/orders` looks the event up on the server and prices the order itself (the browser cannot
+choose what it pays), rate-limits submissions and uses the same origin check as the rest of the
+API. `orders.json` holds names and Roblox usernames — treat the repository as private data and
+keep it private on GitHub.
 
 ## Careers
 
@@ -195,6 +197,6 @@ hero copy stays readable.
 - The venue holds 85 people: one basement, opened 2019.
 - Motion respects `prefers-reduced-motion`.
 - `assets/data/admin.json` holds the owner username and scrypt hash, and
-  `assets/data/reservations.json` holds guest names and Discord handles. Both are committed to
-  the repository: keep the repo **private**, and never link those files directly.
+  `assets/data/orders.json` holds IC names and Roblox usernames. Both are committed to the
+  repository: keep the repo **private**, and never link those files directly.
 - All names, figures, prices and events are fictional, for the New Campton roleplay setting.

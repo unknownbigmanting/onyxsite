@@ -28,11 +28,12 @@
   var memberFormTitle = document.querySelector("[data-member-form-title]");
   var memberSubmit = document.querySelector("[data-member-submit]");
 
-  var resList = document.querySelector("[data-res-list]");
-  var resEmpty = document.querySelector("[data-res-empty]");
-  var resCount = document.querySelector("[data-res-count]");
-  var priceForm = document.querySelector("[data-price-form]");
-  var resState = null;
+  var orderList = document.querySelector("[data-order-list]");
+  var orderEmpty = document.querySelector("[data-order-empty]");
+  var orderCount = document.querySelector("[data-order-count]");
+  var orderTickets = document.querySelector("[data-order-tickets]");
+  var orderDue = document.querySelector("[data-order-due]");
+  var orderState = null;
 
   var state = {
     events: [],
@@ -206,9 +207,8 @@
         setDirty(false);
         state.events = [];
         state.team = [];
-        resState = null;
-        if (resList) resList.innerHTML = "";
-        if (priceForm) priceForm.reset();
+        orderState = null;
+        if (orderList) orderList.innerHTML = "";
         showLogin("Signed out.");
       });
   }
@@ -222,7 +222,7 @@
         renderAll();
         setDirty(false);
         log("Loaded " + state.events.length + " events and " + state.team.length + " people.");
-        loadReservations();
+        loadOrders();
       })
       .catch(function (err) {
         log(err.message);
@@ -290,6 +290,7 @@
     eventForm.querySelector('[name="time"]').value = ev.time || "";
     eventForm.querySelector('[name="venue"]').value = ev.venue || "";
     eventForm.querySelector('[name="entry"]').value = ev.entry || "";
+    eventForm.querySelector('[name="ticket"]').value = Number(ev.ticket) || 0;
     eventForm.querySelector('[name="status"]').value = ev.status || "open";
     eventForm.querySelector('[name="statusLabel"]').value = ev.statusLabel || "";
     eventForm.querySelector('[name="description"]').value = ev.description || "";
@@ -339,6 +340,7 @@
         status: eventForm.querySelector('[name="status"]').value,
         statusLabel: eventForm.querySelector('[name="statusLabel"]').value.trim() || "Open",
         entry: eventForm.querySelector('[name="entry"]').value.trim(),
+        ticket: Math.max(parseInt(eventForm.querySelector('[name="ticket"]').value, 10) || 0, 0),
         description: eventForm.querySelector('[name="description"]').value.trim(),
         featured: eventForm.querySelector('[name="featured"]').checked
       };
@@ -510,60 +512,57 @@
     });
   }
 
-  /* ---------- Reservations ---------- */
-  function money(value) {
-    var sign = (resState && resState.prices && resState.prices.currency) || "$";
-    return sign + Number(value || 0).toLocaleString("en-GB");
+  /* ---------- Orders ---------- */
+  function cash(value) {
+    return "$" + Number(value || 0).toLocaleString("en-GB");
   }
 
-  function applyPrices() {
-    if (!priceForm || !resState) return;
-    ["guest", "table", "booth"].forEach(function (key) {
-      var field = priceForm.querySelector('[name="' + key + '"]');
-      if (field) field.value = resState.prices[key];
-    });
-  }
+  function renderOrders() {
+    if (!orderList || !orderState) return;
+    var items = orderState.items || [];
 
-  function renderReservations() {
-    if (!resList || !resState) return;
-    var items = resState.items || [];
-    resList.innerHTML = items.map(function (item) {
+    orderList.innerHTML = items.map(function (item) {
       var created = item.created ? new Date(item.created) : null;
       var when = created && !isNaN(created.getTime())
         ? created.toLocaleDateString("en-GB", { day: "numeric", month: "short" })
         : "";
-      var meta = [item.night, item.contact, when, item.notes].filter(Boolean).map(esc).join(" · ");
+      var meta = [item.night, "ref " + item.id, when, item.notes].filter(Boolean).map(esc).join(" · ");
+
       return '' +
         '<div class="admin-row">' +
-          '<div><b>' + esc(item.party) + '</b><small>pax</small></div>' +
+          '<div><b>' + esc(item.qty) + '</b><small>tix</small></div>' +
           '<div>' +
-            '<div class="admin-row-title">' + esc(item.name) + ' · ' + esc(item.type) + ' · ' + money(item.amount) +
+            '<div class="admin-row-title">' + esc(item.icName) + ' · ' + esc(item.roblox) + ' · ' + cash(item.total) +
               (item.status === "paid" ? ' · paid' : '') + '</div>' +
             '<div class="admin-row-meta">' + meta + '</div>' +
           '</div>' +
           '<div class="admin-row-actions">' +
-            '<button class="btn btn--ghost btn--small" type="button" data-res-paid="' + esc(item.id) + '">' +
+            '<button class="btn btn--ghost btn--small" type="button" data-order-paid="' + esc(item.id) + '">' +
               (item.status === "paid" ? "Mark unpaid" : "Mark paid") + '</button>' +
-            '<button class="btn btn--ghost btn--small" type="button" data-res-delete="' + esc(item.id) + '">Delete</button>' +
+            '<button class="btn btn--ghost btn--small" type="button" data-order-delete="' + esc(item.id) + '">Delete</button>' +
           '</div>' +
         '</div>';
     }).join("");
-    if (resEmpty) resEmpty.hidden = items.length !== 0;
-    if (resCount) {
-      var due = items.filter(function (i) { return i.status !== "paid"; })
-        .reduce(function (sum, i) { return sum + Number(i.amount || 0); }, 0);
-      resCount.textContent = items.length + " bookings · " + money(due) + " due at the door";
-    }
+
+    if (orderEmpty) orderEmpty.hidden = items.length !== 0;
+
+    var tickets = items.reduce(function (sum, i) { return sum + Number(i.qty || 0); }, 0);
+    var due = items.filter(function (i) { return i.status !== "paid"; })
+      .reduce(function (sum, i) { return sum + Number(i.total || 0); }, 0);
+
+    if (orderCount) orderCount.textContent = items.length + " orders · " + tickets + " tickets";
+    if (orderTickets) orderTickets.textContent = String(tickets);
+    if (orderDue) orderDue.textContent = cash(due);
   }
 
-  function saveReservations(message) {
-    if (!resState) return;
-    api("/api/reservations", {
+  function saveOrders(message) {
+    if (!orderState) return;
+    api("/api/orders", {
       method: "PUT",
-      body: JSON.stringify({ prices: resState.prices, items: resState.items })
+      body: JSON.stringify({ items: orderState.items })
     })
       .then(function (data) {
-        log((message ? message + " " : "") + "Saved " + data.items + " reservations.");
+        log((message ? message + " " : "") + "Saved " + data.items + " orders.");
       })
       .catch(function (err) {
         if (err.status === 401) showLogin("Session expired — sign in again.");
@@ -571,16 +570,12 @@
       });
   }
 
-  function loadReservations() {
-    if (!resList && !priceForm) return;
-    api("/api/reservations")
+  function loadOrders() {
+    if (!orderList) return;
+    api("/api/orders")
       .then(function (data) {
-        resState = {
-          prices: data.prices || { currency: "$", guest: 10, table: 150, booth: 300 },
-          items: Array.isArray(data.items) ? data.items : []
-        };
-        applyPrices();
-        renderReservations();
+        orderState = { items: Array.isArray(data.items) ? data.items : [] };
+        renderOrders();
       })
       .catch(function (err) {
         if (err.status === 401) return;
@@ -588,48 +583,31 @@
       });
   }
 
-  if (resList) {
-    resList.addEventListener("click", function (e) {
-      if (!resState) return;
-      var paid = e.target.closest("[data-res-paid]");
-      var del = e.target.closest("[data-res-delete]");
-      if (paid) {
-        var id = paid.getAttribute("data-res-paid");
-        resState.items = resState.items.map(function (item) {
-          return item.id === id ? Object.assign({}, item, { status: item.status === "paid" ? "reserved" : "paid" }) : item;
-        });
-        renderReservations();
-        saveReservations("Updated booking.");
-      }
-      if (del) {
-        var removeId = del.getAttribute("data-res-delete");
-        var item = resState.items.find(function (x) { return x.id === removeId; });
-        if (!item || !window.confirm("Delete the booking for " + item.name + "?")) return;
-        resState.items = resState.items.filter(function (x) { return x.id !== removeId; });
-        renderReservations();
-        saveReservations("Deleted booking.");
-      }
-    });
-  }
+  if (orderList) {
+    orderList.addEventListener("click", function (e) {
+      if (!orderState) return;
+      var paid = e.target.closest("[data-order-paid]");
+      var del = e.target.closest("[data-order-delete]");
 
-  if (priceForm) {
-    priceForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      if (!resState) return;
-      var read = function (name, fallback) {
-        var n = parseInt(priceForm.querySelector('[name="' + name + '"]').value, 10);
-        if (isNaN(n) || n < 0) return fallback;
-        return Math.min(n, 100000);
-      };
-      resState.prices = {
-        currency: (resState.prices && resState.prices.currency) || "$",
-        guest: read("guest", 10),
-        table: read("table", 150),
-        booth: read("booth", 300)
-      };
-      applyPrices();
-      renderReservations();
-      saveReservations("Prices updated.");
+      if (paid) {
+        var id = paid.getAttribute("data-order-paid");
+        orderState.items = orderState.items.map(function (item) {
+          return item.id === id
+            ? Object.assign({}, item, { status: item.status === "paid" ? "unpaid" : "paid" })
+            : item;
+        });
+        renderOrders();
+        saveOrders("Updated order.");
+      }
+
+      if (del) {
+        var removeId = del.getAttribute("data-order-delete");
+        var item = orderState.items.filter(function (x) { return x.id === removeId; })[0];
+        if (!item || !window.confirm("Delete the order for " + item.icName + "?")) return;
+        orderState.items = orderState.items.filter(function (x) { return x.id !== removeId; });
+        renderOrders();
+        saveOrders("Deleted order.");
+      }
     });
   }
 

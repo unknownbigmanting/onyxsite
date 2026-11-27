@@ -4,7 +4,7 @@ var fs = require("fs");
 var path = require("path");
 
 var CONTENT_PATH = "assets/data/content.json";
-var RESERVATIONS_PATH = "assets/data/reservations.json";
+var ORDERS_PATH = "assets/data/orders.json";
 
 function githubConfig(filePath) {
   var token = process.env.GITHUB_TOKEN;
@@ -121,7 +121,7 @@ async function writeContent(text, message) {
 
 module.exports = {
   CONTENT_PATH: CONTENT_PATH,
-  RESERVATIONS_PATH: RESERVATIONS_PATH,
+  ORDERS_PATH: ORDERS_PATH,
   readText: readText,
   writeText: writeText,
   readContent: readContent,
