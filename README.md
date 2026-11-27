@@ -137,6 +137,21 @@ Vercel, never into a file in the repo.
 appear. `tags` are free text (Booking, Brand, Since 2021, Cool…). `photo` takes an `https://`
 URL — leave it empty and the card shows initials. `featured` puts someone in the home preview.
 
+### Backup
+
+**Your data** at the bottom of the editor has a **Download backup** button. It writes one JSON
+file to your computer (`club-onyx-backup-YYYY-MM-DD.json`) with everything the site knows:
+
+```json
+{ "exported": "…", "site": "Club Onyx", "content": { "events": [], "team": [] }, "orders": [], "applications": [] }
+```
+
+It is built in your browser from the same data the site serves — nothing is uploaded anywhere.
+To restore, copy `content.events` and `content.team` back into `assets/data/content.json` and
+the `orders` / `applications` arrays into `assets/data/orders.json` and
+`assets/data/applications.json` (on GitHub or in the repo), then press **Save changes** once in
+the editor so the deployment picks it up.
+
 ### Editing in the browser
 
 Open `/admin.html`, sign in with the password you hashed, then use the **Events**, **Team** and
@@ -184,9 +199,12 @@ Statuses are `received`, `review`, `interview`, `accepted` and `declined`. The *
 tab in the admin panel lists every application with its full answers, sets the status, and has
 a **decision box** (up to 800 characters, line breaks kept) where you write the answer the
 applicant reads with their status — accepted with a time and door, or a short no. Each change
-saves immediately, and the decision box autosaves about 0.7 s after you stop typing — the box
-says **Saving…** then **Saved**, and it never re-renders the row, so a long answer is never
-lost and the cursor stays where it was.
+saves immediately, and the decision box autosaves: every keystroke keeps a draft in the
+browser's `localStorage`, and the note is committed to GitHub **at most once every 10 seconds**
+while you type, plus immediately when you leave the box. That keeps typing from firing a Vercel
+deploy per pause. The box says **Draft kept · saves every 10s**, then **Saving…**, then
+**Saved**; a draft left over from a closed tab is restored and pushed on the next visit, and the
+row is never re-rendered, so the cursor stays where it was.
 
 `/api/applications` takes a POST from anyone (rate-limited, one open application per username),
 answers `?username=` lookups with only that applicant's status and note, and keeps the full
@@ -214,7 +232,8 @@ The `/api` folder is detected automatically as Node functions — no `vercel.jso
 
 | File | Used for |
 | --- | --- |
-| `onyx-wordmark.jpg` | About panel + social preview |
+| `onyx-wordmark.jpg` | About panel + social preview (1024², desktop) |
+| `onyx-wordmark-640.jpg` | Same wordmark for phones — `index.html` serves it under 760px |
 | `venue-angle.jpg` | Hero background |
 | `venue-sign.jpg`, `venue-bar.jpg` | "The room" gallery |
 | `favicon.png` | Browser tab icon — the ONYX wordmark cropped out of `onyx2.webp` |

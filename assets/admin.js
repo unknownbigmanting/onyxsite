@@ -699,6 +699,11 @@
   function renderApplications() {
     if (!appList || !appState) return;
     var items = appState.items || [];
+    var drafts = {};
+    items.forEach(function (item) {
+      var draft = readDraft(item.id);
+      if (draft !== null && draft !== item.note) drafts[item.id] = draft;
+    });
 
     appList.innerHTML = items.map(function (item) {
       var d = new Date(item.created);
@@ -730,7 +735,7 @@
             '<div class="admin-app-answers">' + answers + '</div>' +
             '<label class="admin-app-note"><span class="field-hint">Decision / note for the applicant — they see this when they check their status</span>' +
               '<span class="field-hint app-save" data-app-note-state="' + esc(item.id) + '"></span>' +
-              '<textarea rows="3" maxlength="800" data-app-note="' + esc(item.id) + '" placeholder="Accepted — meet us at the door on Saturday at 20:00 and ask for the duty manager.">' + esc(item.note) + '</textarea>' +
+              '<textarea rows="3" maxlength="800" data-app-note="' + esc(item.id) + '" placeholder="Accepted — meet us at the door on Saturday at 20:00 and ask for the duty manager.">' + esc(drafts[item.id] != null ? drafts[item.id] : item.note) + '</textarea>' +
             '</label>' +
           '</div>' +
           '<div class="admin-row-actions">' +
@@ -747,6 +752,12 @@
     if (appCount) appCount.textContent = items.length + (items.length === 1 ? " application" : " applications");
     if (appOpen) appOpen.textContent = String(open);
     if (appAccepted) appAccepted.textContent = String(accepted);
+
+    Object.keys(drafts).forEach(function (id) {
+      noteValue(id, drafts[id]);
+      setNoteState(id, "Draft restored · saves every 10s", "pending");
+      scheduleNoteSave(id);
+    });
   }
 
   function saveApplications(message) {
@@ -769,6 +780,7 @@
     api("/api/applications")
       .then(function (data) {
         appState = { items: Array.isArray(data.items) ? data.items : [] };
+        pruneDrafts(appState.items);
         renderApplications();
       })
       .catch(function (err) {
@@ -777,8 +789,32 @@
       });
   }
 
+  var NOTE_SAVE_EVERY = 10000;
   var noteTimers = {};
+  var noteLastSave = {};
   var lastNote = {};
+
+  /* Drafts live in localStorage so nothing is lost between GitHub commits. */
+  function draftKey(id) { return "onyx.app.draft." + id; }
+  function readDraft(id) {
+    try { return window.localStorage.getItem(draftKey(id)); } catch (e) { return null; }
+  }
+  function writeDraft(id, value) {
+    try { window.localStorage.setItem(draftKey(id), value); } catch (e) {}
+  }
+  function clearDraft(id) {
+    try { window.localStorage.removeItem(draftKey(id)); } catch (e) {}
+  }
+  function pruneDrafts(items) {
+    try {
+      var keep = {};
+      items.forEach(function (item) { keep[draftKey(item.id)] = true; });
+      for (var i = window.localStorage.length - 1; i >= 0; i--) {
+        var key = window.localStorage.key(i);
+        if (key && key.indexOf("onyx.app.draft.") === 0 && !keep[key]) window.localStorage.removeItem(key);
+      }
+    } catch (e) {}
+  }
 
   function setNoteState(id, text, state) {
     if (!appList) return;
@@ -796,28 +832,52 @@
     });
   }
 
-  /* Autosave: the whole list goes up, but the note is written as you type so a
-     long decision is never lost. The row is not re-rendered, so focus stays. */
+  /* Autosave: every commit triggers a Vercel deploy, so typing writes a local
+     draft and only reaches GitHub once every 10 seconds (and on blur). The row
+     is never re-rendered, so the cursor stays where it is. */
   function saveNote(id) {
+    clearTimeout(noteTimers[id]);
     if (!appState) return;
     var item = appState.items.filter(function (x) { return x.id === id; })[0];
     if (!item) return;
-    if (lastNote[id] === item.note) return;
-    lastNote[id] = item.note;
+    if (lastNote[id] === item.note) {
+      clearDraft(id);
+      setNoteState(id, "Saved", "ok");
+      return;
+    }
+    var sending = item.note;
+    lastNote[id] = sending;
+    noteLastSave[id] = Date.now();
     setNoteState(id, "Saving…", "pending");
     api("/api/applications", {
       method: "PUT",
       body: JSON.stringify({ items: appState.items })
     })
       .then(function () {
+        var current = appState.items.filter(function (x) { return x.id === id; })[0];
+        if (current && current.note !== sending) {
+          setNoteState(id, "Draft kept · saves every 10s", "pending");
+          scheduleNoteSave(id);
+          return;
+        }
+        clearDraft(id);
         setNoteState(id, "Saved", "ok");
       })
       .catch(function (err) {
         delete lastNote[id];
+        noteLastSave[id] = 0;
         if (err.status === 401) { showLogin("Session expired — sign in again."); return; }
-        setNoteState(id, "Not saved — retry", "err");
+        setNoteState(id, "Not saved — draft kept", "err");
         log(err.message);
       });
+  }
+
+  function scheduleNoteSave(id) {
+    clearTimeout(noteTimers[id]);
+    var last = noteLastSave[id] || 0;
+    var wait = Math.max(0, NOTE_SAVE_EVERY - (Date.now() - last));
+    if (wait === 0) { saveNote(id); return; }
+    noteTimers[id] = setTimeout(function () { saveNote(id); }, wait);
   }
 
   if (appList) {
@@ -826,9 +886,9 @@
       if (!note || !appState) return;
       var id = note.getAttribute("data-app-note");
       noteValue(id, note.value);
-      setNoteState(id, "Saving…", "pending");
-      clearTimeout(noteTimers[id]);
-      noteTimers[id] = setTimeout(function () { saveNote(id); }, 700);
+      writeDraft(id, note.value);
+      setNoteState(id, "Draft kept · saves every 10s", "pending");
+      scheduleNoteSave(id);
     });
 
     appList.addEventListener("change", function (e) {
@@ -867,6 +927,40 @@
     });
   }
 
+  /* ---------- Backup ---------- */
+  function downloadBackup() {
+    log("Collecting a backup…");
+    Promise.all([api("/api/content"), api("/api/orders"), api("/api/applications")])
+      .then(function (results) {
+        var content = results[0] || {};
+        var bundle = {
+          exported: new Date().toISOString(),
+          site: "Club Onyx",
+          content: { events: content.events || [], team: content.team || [] },
+          orders: (results[1] && results[1].items) || [],
+          applications: (results[2] && results[2].items) || []
+        };
+        var blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement("a");
+        link.href = url;
+        link.download = "club-onyx-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+        document.body.appendChild(link);
+        link.click();
+        window.setTimeout(function () {
+          URL.revokeObjectURL(url);
+          if (link.parentNode) link.parentNode.removeChild(link);
+        }, 1500);
+        log("Backup downloaded — " + bundle.content.events.length + " events, " +
+          bundle.content.team.length + " people, " + bundle.orders.length + " orders, " +
+          bundle.applications.length + " applications.");
+      })
+      .catch(function (err) {
+        if (err.status === 401) { showLogin("Session expired — sign in again."); return; }
+        log("Backup failed: " + err.message);
+      });
+  }
+
   /* ---------- Tabs ---------- */
   document.querySelectorAll("[data-tab]").forEach(function (button) {
     button.addEventListener("click", function () {
@@ -885,6 +979,7 @@
     button.addEventListener("click", function () {
       var action = button.getAttribute("data-action");
       if (action === "save") save();
+      if (action === "backup") downloadBackup();
       if (action === "logout") logout();
       if (action === "clear-event") clearEventForm();
       if (action === "clear-member") clearMemberForm();

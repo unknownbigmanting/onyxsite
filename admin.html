@@ -318,6 +318,21 @@
         </div>
       </div>
 
+      <div class="admin-panel" style="margin-top:18px">
+        <h2>Your data</h2>
+        <p class="admin-note" style="margin-top:0">
+          Everything on the site lives in the repository. Download it as one JSON file to keep on
+          your computer — events, team, ticket orders and applications — so you always have a copy
+          if a deployment goes wrong.
+        </p>
+        <button class="btn btn--ghost btn--small" type="button" data-action="backup">Download backup</button>
+        <p class="admin-note" style="margin-bottom:0">
+          To restore, put the <code>content.events</code> and <code>content.team</code> arrays back in
+          <code>assets/data/content.json</code>, and the <code>orders</code> / <code>applications</code>
+          arrays in their files, then edit any event and press <strong>Save changes</strong>.
+        </p>
+      </div>
+
       <p class="admin-log" data-admin-log role="status" aria-live="polite"></p>
       <p class="admin-note">
         <strong>Saving:</strong> changes are written to <code>assets/data/content.json</code> in
