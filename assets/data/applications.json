@@ -1,5 +1,23 @@
 {
   "updated": "2026-11-27",
   "note": "Crew applications from /careers.html. The status is what the applicant sees when they check their username.",
-  "items": []
+  "items": [
+    {
+      "id": "APP-4A7826",
+      "created": "2026-11-27T23:28:39.611Z",
+      "roblox": "Febrianto_Niko",
+      "discord": "alfeagsbrother2",
+      "icName": "Anthony Baker",
+      "timezone": "GMT (UTC+0)",
+      "role": "Head of Security",
+      "gunLicense": "no",
+      "meleePass": "yes",
+      "why": "because im good at security i have protected bunch peoples",
+      "experience": "um i worked at old club onyx",
+      "extra": "very avaliable",
+      "note": "",
+      "status": "received",
+      "updated": "2026-11-27T23:28:39.613Z"
+    }
+  ]
 }
