@@ -94,12 +94,16 @@
           io.unobserve(entry.target);
         }
       });
-    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+    }, { rootMargin: "0px 0px 10% 0px", threshold: 0.01 });
   }
   function reveal(root) {
     (root || document).querySelectorAll("[data-reveal]:not(.is-visible)").forEach(function (el) {
-      if (io) io.observe(el);
-      else el.classList.add("is-visible");
+      // Anything already on screen appears straight away, so a section can never
+      // sit invisible in the viewport waiting for a scroll that may not come.
+      var rect = el.getBoundingClientRect();
+      var onScreen = rect.top < window.innerHeight + 40 && rect.bottom > -40;
+      if (!io || onScreen) el.classList.add("is-visible");
+      else io.observe(el);
     });
   }
   reveal(document);

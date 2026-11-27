@@ -21,6 +21,7 @@ content; everything else is static.
 | `assets/site.js` | Nav, countdowns, calendar, team, tickets, applications, forms |
 | `assets/admin.js` | Staff editor (talks to `/api`) |
 | `assets/style.css` | All styling |
+| `assets/fonts/` | Self-hosted Archivo and Inter (variable woff2, latin subset) |
 | `api/` | Serverless endpoints: login, logout, session, setup, content, orders, applications |
 | `server.mjs` | Local dev server (static + `/api`), no dependencies |
 
@@ -183,7 +184,9 @@ Statuses are `received`, `review`, `interview`, `accepted` and `declined`. The *
 tab in the admin panel lists every application with its full answers, sets the status, and has
 a **decision box** (up to 800 characters, line breaks kept) where you write the answer the
 applicant reads with their status — accepted with a time and door, or a short no. Each change
-saves immediately.
+saves immediately, and the decision box autosaves about 0.7 s after you stop typing — the box
+says **Saving…** then **Saved**, and it never re-renders the row, so a long answer is never
+lost and the cursor stays where it was.
 
 `/api/applications` takes a POST from anyone (rate-limited, one open application per username),
 answers `?username=` lookups with only that applicant's status and note, and keeps the full
@@ -221,7 +224,11 @@ hero copy stays readable.
 
 ## Notes
 
-- Fonts (Archivo for headings, Inter for body) load from Google Fonts; images are local.
+- Fonts (Archivo for headings, Inter for body) are self-hosted from `assets/fonts/` as two
+  variable woff2 files — no Google Fonts request blocks the first paint, and nothing breaks if
+  a third-party font host is blocked or slow.
+- The home page preloads the hero photo and lazy-loads the wordmark; the wordmark is stored at
+  ~160 KB so the about panel does not hold up the page.
 - The venue holds 85 people: one basement, opened 2019.
 - Motion respects `prefers-reduced-motion`.
 - `assets/data/admin.json` holds the owner username and scrypt hash,

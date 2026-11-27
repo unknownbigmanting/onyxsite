@@ -729,6 +729,7 @@
             '<div class="admin-row-meta">' + meta + '</div>' +
             '<div class="admin-app-answers">' + answers + '</div>' +
             '<label class="admin-app-note"><span class="field-hint">Decision / note for the applicant — they see this when they check their status</span>' +
+              '<span class="field-hint app-save" data-app-note-state="' + esc(item.id) + '"></span>' +
               '<textarea rows="3" maxlength="800" data-app-note="' + esc(item.id) + '" placeholder="Accepted — meet us at the door on Saturday at 20:00 and ask for the duty manager.">' + esc(item.note) + '</textarea>' +
             '</label>' +
           '</div>' +
@@ -776,28 +777,80 @@
       });
   }
 
+  var noteTimers = {};
+  var lastNote = {};
+
+  function setNoteState(id, text, state) {
+    if (!appList) return;
+    var el = appList.querySelector('[data-app-note-state="' + id + '"]');
+    if (!el) return;
+    el.textContent = text;
+    if (state) el.dataset.state = state;
+    else delete el.dataset.state;
+  }
+
+  function noteValue(id, value) {
+    var now = new Date().toISOString();
+    appState.items = appState.items.map(function (item) {
+      return item.id === id ? Object.assign({}, item, { note: String(value).slice(0, 800), updated: now }) : item;
+    });
+  }
+
+  /* Autosave: the whole list goes up, but the note is written as you type so a
+     long decision is never lost. The row is not re-rendered, so focus stays. */
+  function saveNote(id) {
+    if (!appState) return;
+    var item = appState.items.filter(function (x) { return x.id === id; })[0];
+    if (!item) return;
+    if (lastNote[id] === item.note) return;
+    lastNote[id] = item.note;
+    setNoteState(id, "Saving…", "pending");
+    api("/api/applications", {
+      method: "PUT",
+      body: JSON.stringify({ items: appState.items })
+    })
+      .then(function () {
+        setNoteState(id, "Saved", "ok");
+      })
+      .catch(function (err) {
+        delete lastNote[id];
+        if (err.status === 401) { showLogin("Session expired — sign in again."); return; }
+        setNoteState(id, "Not saved — retry", "err");
+        log(err.message);
+      });
+  }
+
   if (appList) {
+    appList.addEventListener("input", function (e) {
+      var note = e.target.closest("[data-app-note]");
+      if (!note || !appState) return;
+      var id = note.getAttribute("data-app-note");
+      noteValue(id, note.value);
+      setNoteState(id, "Saving…", "pending");
+      clearTimeout(noteTimers[id]);
+      noteTimers[id] = setTimeout(function () { saveNote(id); }, 700);
+    });
+
     appList.addEventListener("change", function (e) {
       if (!appState) return;
-      var status = e.target.closest("[data-app-status]");
-      var note = e.target.closest("[data-app-note]");
-      var now = new Date().toISOString();
 
+      var note = e.target.closest("[data-app-note]");
+      if (note) {
+        var noteId = note.getAttribute("data-app-note");
+        clearTimeout(noteTimers[noteId]);
+        noteValue(noteId, note.value);
+        saveNote(noteId);
+        return;
+      }
+
+      var status = e.target.closest("[data-app-status]");
       if (status) {
         var statusId = status.getAttribute("data-app-status");
         appState.items = appState.items.map(function (item) {
-          return item.id === statusId ? Object.assign({}, item, { status: status.value, updated: now }) : item;
+          return item.id === statusId ? Object.assign({}, item, { status: status.value, updated: new Date().toISOString() }) : item;
         });
         renderApplications();
         saveApplications("Updated application.");
-      }
-
-      if (note) {
-        var noteId = note.getAttribute("data-app-note");
-        appState.items = appState.items.map(function (item) {
-          return item.id === noteId ? Object.assign({}, item, { note: note.value.trim().slice(0, 800), updated: now }) : item;
-        });
-        saveApplications("Saved note.");
       }
     });
 
