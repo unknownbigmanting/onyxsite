@@ -3,6 +3,20 @@
   "note": "Ticket orders from /tickets.html. Everyone pays at the door.",
   "items": [
     {
+      "id": "ONX-9286A6",
+      "created": "2026-11-28T06:44:18.072Z",
+      "eventId": "grand-opening-free-entry-2026-11-28",
+      "night": "GRAND OPENING (FREE ENTRY) — Saturday, 28 November 2026",
+      "date": "2026-11-28T20:30:00",
+      "price": 0,
+      "qty": 1,
+      "total": 0,
+      "icName": "Jacob Edwards",
+      "roblox": "lukesurferdude8910",
+      "notes": "",
+      "status": "unpaid"
+    },
+    {
       "id": "ONX-4641E2",
       "created": "2026-11-28T01:57:15.930Z",
       "eventId": "grand-opening-free-entry-2026-11-28",
