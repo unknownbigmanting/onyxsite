@@ -1,7 +1,27 @@
 {
-  "updated": "2026-11-27",
+  "updated": "2026-11-28",
   "note": "Maintained from /admin.html. Events drive the calendar; team drives the team page and the home preview.",
-  "events": [],
+  "events": [
+    {
+      "id": "grand-opening-free-entry-2026-11-28",
+      "title": "GRAND OPENING (FREE ENTRY)",
+      "date": "2026-11-28T20:30:00",
+      "displayDate": "Saturday, 28 November 2026",
+      "time": "20:30-00:00",
+      "venue": "Whole club",
+      "tags": [
+        "club",
+        "special"
+      ],
+      "status": "open",
+      "statusLabel": "Tickets available",
+      "entry": "Free for the first 10 people!",
+      "ticket": 0,
+      "description": "New beginnings, under new management.",
+      "timezone": "GMT",
+      "featured": true
+    }
+  ],
   "team": [
     {
       "id": "christopher-reed",
