@@ -20,6 +20,25 @@
       "description": "New beginnings, under new management.",
       "timezone": "GMT",
       "featured": true
+    },
+    {
+      "id": "grand-opening-2026-11-28",
+      "title": "GRAND OPENING",
+      "date": "2026-11-28T20:30:00",
+      "displayDate": "Saturday, 28 November 2026",
+      "time": "20:30-00:00",
+      "venue": "Whole club",
+      "tags": [
+        "club",
+        "special"
+      ],
+      "status": "open",
+      "statusLabel": "Tickets available",
+      "entry": "$50 per person",
+      "ticket": 50,
+      "description": "New beginnings, under new management.",
+      "timezone": "GMT",
+      "featured": false
     }
   ],
   "team": [
